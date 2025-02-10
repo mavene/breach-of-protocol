@@ -1692,6 +1692,7 @@ Transform:
   m_Children:
   - {fileID: 1757007291}
   - {fileID: 1205131641}
+  - {fileID: 1588532127}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1482839182
@@ -1929,7 +1930,7 @@ GameObject:
   - component: {fileID: 1588532131}
   m_Layer: 0
   m_Name: Chest
-  m_TagString: Chest
+  m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1994,12 +1995,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1588532125}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.6958375, y: 3.0416224, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -10.595838, y: 3.0716224, z: -0.088861994}
   m_LocalScale: {x: 0.4, y: 0.4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1245396136}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &1588532128
 Animator:
@@ -2106,6 +2107,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89ec7cbaca10f45b283cbc4c01f106d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  minX: -5
+  maxX: 5
+  minY: -5
+  maxY: 5
 --- !u!1 &1708845707
 GameObject:
   m_ObjectHideFlags: 0
@@ -2970,4 +2975,3 @@ SceneRoots:
   - {fileID: 562223028}
   - {fileID: 917144874}
   - {fileID: 3044288931154956851}
-  - {fileID: 1588532127}

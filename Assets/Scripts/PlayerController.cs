@@ -124,12 +124,14 @@ public class PlayerController : MonoBehaviour
     private void Shoot(Vector2 direction)
     {
         GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
+        bullet.tag = "Bullet";
         bullet.AddComponent<Rigidbody2D>().gravityScale = 0;
         bullet.GetComponent<Rigidbody2D>().velocity = new Vector3(
             (direction.x < 0) ? Mathf.Floor(direction.x) * bulletSpeed : Mathf.Ceil(direction.x) * bulletSpeed,
             (direction.y < 0) ? Mathf.Floor(direction.y) * bulletSpeed : Mathf.Ceil(direction.y) * bulletSpeed,
             0
         );
+        
         lastFire = Time.time;
     }
 
@@ -170,9 +172,19 @@ public class PlayerController : MonoBehaviour
     // TODO: Move out to GameController
     private void ResetItems()
     {
+        
         foreach (Transform eachChild in items.transform)
         {
-            eachChild.GetComponent<ItemController>().Respawn();
+            //if chestcontroller is found, respawn chest
+            if (eachChild.GetComponent<ChestController>() != null)
+            {
+                eachChild.GetComponent<ChestController>().Respawn();
+            }
+            else{
+                eachChild.GetComponent<ItemController>().Respawn();
+            }
+            Debug.Log("Respawning item: " + eachChild.name);
+            
         }
     }
 
