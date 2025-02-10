@@ -80,8 +80,8 @@ public class PlayerController : MonoBehaviour
         // Apply translation
         playerBody.velocity = moveInput * moveSpeed;
 
-        // Set animation parameter -> check if I really need this
-        playerAnimator.SetFloat("xSpeed", Mathf.Abs(playerBody.velocity.x));
+        // Set animation parameter -> TODO: check if I really need this and how to vary the animation using this param
+        // playerAnimator.SetFloat("xSpeed", Mathf.Abs(playerBody.velocity.x));
     }
 
     private void Shoot(Vector2 direction)

@@ -10,6 +10,7 @@ public enum EnemyState
     Die
 };
 
+// TODO: He spins weirdly now... lmao
 public class EnemyController : MonoBehaviour
 {
     private GameObject player;
