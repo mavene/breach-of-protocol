@@ -27,8 +27,14 @@ public class CollectionController : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             scorer.UpdateScore();
-            Destroy(gameObject);
+            gameObject.SetActive(false);
+            //Destroy(gameObject);
         }
+    }
+
+    public void Respawn()
+    {
+        gameObject.SetActive(true);
     }
 
     private void HandleAnimations()

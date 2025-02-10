@@ -1,8 +1,7 @@
 using System.Collections;
-using System.Diagnostics;
-using Unity.Mathematics;
 using UnityEngine;
 
+// Enemy FSM 
 public enum EnemyState
 {
     Wander,
@@ -10,26 +9,32 @@ public enum EnemyState
     Die
 };
 
-// TODO: He spins weirdly now... lmao
 public class EnemyController : MonoBehaviour
 {
-    private GameObject player;
-
+    // State
     public EnemyState currentState = EnemyState.Wander;
-
     public Vector3 startPosition;
     public float range = 5f;
-    public float speed = 1f;
 
+    // Movement
+    public float speed = 1f;
+    private Rigidbody2D enemyBody;
     private bool choosingDirection = false;
-    private bool dead = false;
     private Vector3 randomDirection;
+
+    // Player interactions
+    private GameObject player;
 
     // Start is called before the first frame update
     void Start()
     {
+        // TODO: Track original orientation for respawn
+        startPosition = transform.localPosition;
+
+        enemyBody = GetComponent<Rigidbody2D>();
+        enemyBody.constraints = RigidbodyConstraints2D.FreezeRotation;
+
         player = GameObject.FindGameObjectWithTag("Player");
-        startPosition = transform.position;
     }
 
     // Update is called once per frame
@@ -83,7 +88,15 @@ public class EnemyController : MonoBehaviour
     public void Die()
     {
         currentState = EnemyState.Die;
-        Destroy(gameObject);
+        gameObject.SetActive(false);
+        //Destroy(gameObject); // Rationale for removing this is I want to use SetActive instead
+    }
+
+    public void Respawn()
+    {
+        currentState = EnemyState.Wander;
+        gameObject.SetActive(true);
+        gameObject.transform.localPosition = startPosition;
     }
 
     private IEnumerator ChooseDirection()

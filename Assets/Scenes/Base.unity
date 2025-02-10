@@ -237,6 +237,7 @@ MonoBehaviour:
   playerAnimator: {fileID: 0}
   uiManager: {fileID: 917144873}
   enemies: {fileID: 1519514688}
+  items: {fileID: 1245396135}
   currentState: 0
 --- !u!4 &152679878
 Transform:
@@ -1504,11 +1505,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1205131641}
   - component: {fileID: 1205131644}
-  - component: {fileID: 1205131642}
   - component: {fileID: 1205131645}
+  - component: {fileID: 1205131647}
   - component: {fileID: 1205131646}
   m_Layer: 0
-  m_Name: Pickup2
+  m_Name: Pickup
   m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1529,19 +1530,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1245396136}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1205131642
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1205131640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2de4361f22a74742b6968ae817efa1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  collectibleAnimator: {fileID: 0}
 --- !u!212 &1205131644
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1583,7 +1571,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1636155593, guid: cf16bfed434b2a643a471da0557d2c6d, type: 3}
+  m_Sprite: {fileID: -128638150, guid: cf16bfed434b2a643a471da0557d2c6d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1660,6 +1648,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1205131647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1205131640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7881d805a21e84146b039735aa02b725, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collectibleAnimator: {fileID: 0}
 --- !u!1 &1245396135
 GameObject:
   m_ObjectHideFlags: 0
@@ -2243,8 +2244,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1757007291}
   - component: {fileID: 1757007293}
-  - component: {fileID: 1757007294}
   - component: {fileID: 1757007295}
+  - component: {fileID: 1757007297}
   - component: {fileID: 1757007296}
   m_Layer: 0
   m_Name: Pickup
@@ -2320,19 +2321,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &1757007294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1757007290}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2de4361f22a74742b6968ae817efa1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  collectibleAnimator: {fileID: 0}
 --- !u!61 &1757007295
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2399,6 +2387,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1757007297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1757007290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7881d805a21e84146b039735aa02b725, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collectibleAnimator: {fileID: 0}
 --- !u!1 &1801061936
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,7 +1,19 @@
 using UnityEngine;
 
+// Player FSM
+public enum PlayerState
+{
+    Idle,
+    Run,
+    Shoot,
+    Die
+};
+
 public class PlayerController : MonoBehaviour
 {
+    // Position
+    private Vector3 startPosition;
+
     // Movement
     public float moveSpeed = 5f;
     private Rigidbody2D playerBody;
@@ -22,22 +34,17 @@ public class PlayerController : MonoBehaviour
     public UIManager uiManager;
     private ScoreController scorer;
 
-    // Enemies
+    // Game State
     // TODO: Shift this part to overall GameController
     public GameObject enemies;
-
-    public enum PlayerState
-    {
-        Idle,
-        Run,
-        Shoot,
-        Die
-    };
+    public GameObject items;
 
     public PlayerState currentState = PlayerState.Idle;
 
     void Start()
     {
+        startPosition = transform.localPosition;
+
         playerBody = GetComponent<Rigidbody2D>();
         playerBody.constraints = RigidbodyConstraints2D.FreezeRotation; //disallow rotation especially after colliding
 
@@ -146,23 +153,39 @@ public class PlayerController : MonoBehaviour
     private void ResetGame()
     {
         // Reset player
-        playerBody.transform.position = new Vector3(0f, 0f, 0f);
-        // Reset direction
+        playerBody.transform.localPosition = startPosition;
         //faceRightState = true;
 
         // Reset scores
         scorer.ResetScore();
 
-        // Respawn items
-        // TODO: I forgot that after reset it will be destroyed so need instantiate
-
-        // Reset enemies
-        foreach (Transform eachChild in enemies.transform)
-        {
-            eachChild.transform.localPosition = eachChild.GetComponent<EnemyController>().startPosition;
-        }
+        // Reset items and enemies
+        ResetItems();
+        ResetEnemies();
 
         // Hide Game Over Screen
         uiManager.ResetUI();
     }
+
+    // TODO: Move out to GameController
+    private void ResetItems()
+    {
+        foreach (Transform eachChild in items.transform)
+        {
+            eachChild.GetComponent<ItemController>().Respawn();
+        }
+    }
+
+    // TODO: Move out to GameController
+    // TODO: I know its repeated but in case enemies need to respawn differently I can split the logic
+    private void ResetEnemies()
+    {
+        foreach (Transform eachChild in enemies.transform)
+        {
+            eachChild.GetComponent<EnemyController>().Respawn();
+            eachChild.transform.localPosition = eachChild.GetComponent<EnemyController>().startPosition;
+        }
+    }
+
+
 }
