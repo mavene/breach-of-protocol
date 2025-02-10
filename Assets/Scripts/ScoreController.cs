@@ -21,15 +21,17 @@ public class ScoreController : MonoBehaviour
     {
         score++;
         inGameScoreText.text = "Score: " + score.ToString();
+        //gameOverScoreText.text = inGameScoreText.text;
     }
 
     public void FinaliseScore()
     {
-        gameOverScoreText.text = "Score: " + score.ToString();
+        gameOverScoreText.text = inGameScoreText.text;
     }
 
     public void ResetScore()
     {
         score = 0;
+        inGameScoreText.text = "Score: 0";
     }
 }

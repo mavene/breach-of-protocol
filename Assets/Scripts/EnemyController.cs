@@ -17,6 +17,7 @@ public class EnemyController : MonoBehaviour
 
     public EnemyState currentState = EnemyState.Wander;
 
+    public Vector3 startPosition;
     public float range = 5f;
     public float speed = 1f;
 
@@ -28,6 +29,7 @@ public class EnemyController : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
+        startPosition = transform.position;
     }
 
     // Update is called once per frame
