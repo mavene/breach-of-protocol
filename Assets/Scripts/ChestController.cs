@@ -29,6 +29,16 @@ public class ChestController : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
 
     }
+    //the chest will move from left to right with a range of +-0.5
+    void Update()
+    {
+        if(animator.GetBool("Open") == false)
+        {
+             float x = Mathf.PingPong(Time.time, 1) - 0.5f;
+            transform.position = new Vector3(x, transform.position.y, transform.position.z);
+        }
+       
+    }
 
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -36,6 +46,7 @@ public class ChestController : MonoBehaviour
         Debug.Log("Triggered by: " + other.gameObject.tag);
         if (other.gameObject.CompareTag("Bullet"))
         {
+            Destroy(other.gameObject);
          Debug.Log("Bullet hit chest");   
          audioSource.PlayOneShot(hitSound);
             animator.SetBool("Open", true);
