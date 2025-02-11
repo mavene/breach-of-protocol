@@ -7,11 +7,12 @@ TagManager:
   - Item
   - Bullet
   - Enemy
+  - Chest
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - chest
   - Water
   - UI
   - 
@@ -43,4 +44,7 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: New Layer 1
+    uniqueID: 366428403
     locked: 0

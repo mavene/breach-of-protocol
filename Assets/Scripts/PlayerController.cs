@@ -40,6 +40,9 @@ public class PlayerController : MonoBehaviour
     public GameObject items;
 
     public PlayerState currentState = PlayerState.Idle;
+    //add audio for gameover
+    public AudioSource audioSource;
+    public AudioClip gameOverSound;
 
     void Start()
     {
@@ -50,6 +53,7 @@ public class PlayerController : MonoBehaviour
 
         playerAnimator = GetComponent<Animator>();
         scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -64,7 +68,25 @@ public class PlayerController : MonoBehaviour
         ApplyMovement();
         if ((attackInput.x != 0 || attackInput.y != 0) && Time.time > lastFire + fireDelay)
         {
-            Shoot(attackInput);
+            //if attackInput is going to the top or bottom, shoot vertically
+            if (attackInput.y > 0)
+            {
+                Shoot(attackInput,"up");
+            }
+            else if(attackInput.y < 0)
+            {
+                Shoot(attackInput,"down");
+            }
+            else if(attackInput.x > 0)
+            {
+               Shoot(attackInput,"right");
+            }
+            else if(attackInput.x < 0)
+            {
+                Shoot(attackInput,"left");
+            }
+
+            
         }
     }
 
@@ -121,7 +143,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // TODO: Instantiate bullet a bit lower to match gun position of player
-    private void Shoot(Vector2 direction)
+    private void Shoot(Vector2 direction, string orientation)
     {
         GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
         bullet.AddComponent<Rigidbody2D>().gravityScale = 0;
@@ -130,6 +152,17 @@ public class PlayerController : MonoBehaviour
             (direction.y < 0) ? Mathf.Floor(direction.y) * bulletSpeed : Mathf.Ceil(direction.y) * bulletSpeed,
             0
         );
+        if(orientation == "up")
+        {
+            bullet.transform.Rotate(0,0,90);
+        }
+        else if(orientation == "down")
+        {
+            bullet.transform.Rotate(0,0,-90);
+        }
+        
+        Debug.Log("Bullet fired in direction: " + direction);
+        
         lastFire = Time.time;
     }
 
@@ -137,6 +170,7 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Enemy"))
         {
+            audioSource.PlayOneShot(gameOverSound);
             Time.timeScale = 0.0f;
             scorer.FinaliseScore();
             uiManager.ShowGameOver();
@@ -170,9 +204,19 @@ public class PlayerController : MonoBehaviour
     // TODO: Move out to GameController
     private void ResetItems()
     {
+        
         foreach (Transform eachChild in items.transform)
         {
-            eachChild.GetComponent<ItemController>().Respawn();
+            //if chestcontroller is found, respawn chest
+            if (eachChild.GetComponent<ChestController>() != null)
+            {
+                eachChild.GetComponent<ChestController>().Respawn();
+            }
+            else{
+                eachChild.GetComponent<ItemController>().Respawn();
+            }
+            Debug.Log("Respawning item: " + eachChild.name);
+            
         }
     }
 
