@@ -64,7 +64,25 @@ public class PlayerController : MonoBehaviour
         ApplyMovement();
         if ((attackInput.x != 0 || attackInput.y != 0) && Time.time > lastFire + fireDelay)
         {
-            Shoot(attackInput);
+            //if attackInput is going to the top or bottom, shoot vertically
+            if (attackInput.y > 0)
+            {
+                Shoot(attackInput,"up");
+            }
+            else if(attackInput.y < 0)
+            {
+                Shoot(attackInput,"down");
+            }
+            else if(attackInput.x > 0)
+            {
+               Shoot(attackInput,"right");
+            }
+            else if(attackInput.x < 0)
+            {
+                Shoot(attackInput,"left");
+            }
+
+            
         }
     }
 
@@ -121,7 +139,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // TODO: Instantiate bullet a bit lower to match gun position of player
-    private void Shoot(Vector2 direction)
+    private void Shoot(Vector2 direction, string orientation)
     {
         GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
         bullet.tag = "Bullet";
@@ -131,6 +149,16 @@ public class PlayerController : MonoBehaviour
             (direction.y < 0) ? Mathf.Floor(direction.y) * bulletSpeed : Mathf.Ceil(direction.y) * bulletSpeed,
             0
         );
+        if(orientation == "up")
+        {
+            bullet.transform.Rotate(0,0,90);
+        }
+        else if(orientation == "down")
+        {
+            bullet.transform.Rotate(0,0,-90);
+        }
+    
+        Debug.Log("Bullet fired in direction: " + direction);
         
         lastFire = Time.time;
     }
