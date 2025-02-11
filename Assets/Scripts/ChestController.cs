@@ -7,6 +7,12 @@ public class ChestController : MonoBehaviour
     private ScoreController scorer;
     // Position
     private Vector3 startPosition;
+    //audio for rewards
+    public AudioSource audioSource;
+    public AudioClip rewardSound;
+    //audio for hit chest
+    public AudioClip hitSound;
+
     public float minX = -14f;
     public float maxX = 2.5f;
     public float minY = -4f;
@@ -19,6 +25,9 @@ public class ChestController : MonoBehaviour
         {
             Debug.LogError("Animator component not found on this GameObject.");
         }
+        //setups audio source
+        audioSource = GetComponent<AudioSource>();
+
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -28,6 +37,7 @@ public class ChestController : MonoBehaviour
         if (other.gameObject.CompareTag("Bullet"))
         {
          Debug.Log("Bullet hit chest");   
+         audioSource.PlayOneShot(hitSound);
             animator.SetBool("Open", true);
             StartCoroutine(DelayedAction());
         }
@@ -36,6 +46,8 @@ public class ChestController : MonoBehaviour
          //when animator rewards is true, the chest will open
             if (animator.GetBool("rewards"))
             {
+                //add audio for rewards
+                audioSource.PlayOneShot(rewardSound);
                 scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
                 scorer.UpdateScore5();
                 animator.SetBool("Open", false);       
@@ -86,7 +98,9 @@ public class ChestController : MonoBehaviour
         // Set the chest to a random position within the defined range
         float randomX = UnityEngine.Random.Range(minX, maxX);
         float randomY = UnityEngine.Random.Range(minY, maxY);
-        transform.localPosition = new Vector3(randomX, randomY, transform.localPosition.z);
+        //print x and y
+        Debug.Log("Random X: " + randomX + ", Random Y: " + randomY);
+        transform.position = new Vector3(randomX, randomY, 0);
         GetComponent<Renderer>().enabled = true;
 
         // Reset animation parameters

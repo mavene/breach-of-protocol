@@ -40,6 +40,9 @@ public class PlayerController : MonoBehaviour
     public GameObject items;
 
     public PlayerState currentState = PlayerState.Idle;
+    //add audio for gameover
+    public AudioSource audioSource;
+    public AudioClip gameOverSound;
 
     void Start()
     {
@@ -50,6 +53,7 @@ public class PlayerController : MonoBehaviour
 
         playerAnimator = GetComponent<Animator>();
         scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -166,6 +170,7 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Enemy"))
         {
+            audioSource.PlayOneShot(gameOverSound);
             Time.timeScale = 0.0f;
             scorer.FinaliseScore();
             uiManager.ShowGameOver();
