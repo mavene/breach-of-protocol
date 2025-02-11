@@ -152,14 +152,17 @@ public class PlayerController : MonoBehaviour
             (direction.y < 0) ? Mathf.Floor(direction.y) * bulletSpeed : Mathf.Ceil(direction.y) * bulletSpeed,
             0
         );
-        if(orientation == "up")
-        {
-            bullet.transform.Rotate(0,0,90);
-        }
-        else if(orientation == "down")
-        {
-            bullet.transform.Rotate(0,0,-90);
-        }
+        //using the direction of direction.x and direction.y axis, determine how much to rotate the bullet so use phythagoras theorem to calculate the angle
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        bullet.transform.Rotate(0,0,angle);
+        // if(orientation == "up")
+        // {
+        //     bullet.transform.Rotate(0,0,90);
+        // }
+        // else if(orientation == "down")
+        // {
+        //     bullet.transform.Rotate(0,0,-90);
+        // }
         
         Debug.Log("Bullet fired in direction: " + direction);
         
