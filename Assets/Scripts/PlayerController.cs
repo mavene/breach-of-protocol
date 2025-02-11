@@ -142,7 +142,6 @@ public class PlayerController : MonoBehaviour
     private void Shoot(Vector2 direction, string orientation)
     {
         GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
-        bullet.tag = "Bullet";
         bullet.AddComponent<Rigidbody2D>().gravityScale = 0;
         bullet.GetComponent<Rigidbody2D>().velocity = new Vector3(
             (direction.x < 0) ? Mathf.Floor(direction.x) * bulletSpeed : Mathf.Ceil(direction.x) * bulletSpeed,
@@ -157,7 +156,7 @@ public class PlayerController : MonoBehaviour
         {
             bullet.transform.Rotate(0,0,-90);
         }
-    
+        
         Debug.Log("Bullet fired in direction: " + direction);
         
         lastFire = Time.time;
