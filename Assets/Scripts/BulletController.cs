@@ -4,11 +4,17 @@ using UnityEngine;
 
 public class BulletController : MonoBehaviour
 {
-    public float bulletLifetime = 0.5f;
+    // State
+    private float bulletLifetime = 0.5f;
+
+    // Audio
+    private AudioSource audioSource;
+    public AudioClip bulletSound;
 
     // Start is called before the first frame update
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         StartCoroutine(DestroyDelay());
     }
 

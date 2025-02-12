@@ -41,6 +41,10 @@ public class PlayerController : MonoBehaviour
 
     public PlayerState currentState = PlayerState.Idle;
 
+    // Audio
+    public AudioSource audioSource;
+    public AudioClip gameOverSound;
+
     void Start()
     {
         startPosition = transform.localPosition;
@@ -50,6 +54,7 @@ public class PlayerController : MonoBehaviour
 
         playerAnimator = GetComponent<Animator>();
         scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -62,9 +67,29 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         ApplyMovement();
+        // if ((attackInput.x != 0 || attackInput.y != 0) && Time.time > lastFire + fireDelay)
+        // {
+        //     Shoot(attackInput);
+        // }
         if ((attackInput.x != 0 || attackInput.y != 0) && Time.time > lastFire + fireDelay)
         {
-            Shoot(attackInput);
+            //if attackInput is going to the top or bottom, shoot vertically
+            if (attackInput.y > 0)
+            {
+                Shoot(attackInput, "up");
+            }
+            else if (attackInput.y < 0)
+            {
+                Shoot(attackInput, "down");
+            }
+            else if (attackInput.x > 0)
+            {
+                Shoot(attackInput, "right");
+            }
+            else if (attackInput.x < 0)
+            {
+                Shoot(attackInput, "left");
+            }
         }
     }
 
@@ -121,7 +146,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // TODO: Instantiate bullet a bit lower to match gun position of player
-    private void Shoot(Vector2 direction)
+    private void Shoot(Vector2 direction, string orientation)
     {
         GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
         bullet.AddComponent<Rigidbody2D>().gravityScale = 0;
@@ -130,6 +155,8 @@ public class PlayerController : MonoBehaviour
             (direction.y < 0) ? Mathf.Floor(direction.y) * bulletSpeed : Mathf.Ceil(direction.y) * bulletSpeed,
             0
         );
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        bullet.transform.Rotate(0, 0, angle);
         lastFire = Time.time;
     }
 
@@ -137,6 +164,7 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Enemy"))
         {
+            audioSource.PlayOneShot(gameOverSound);
             Time.timeScale = 0.0f;
             scorer.FinaliseScore();
             uiManager.ShowGameOver();
@@ -172,7 +200,15 @@ public class PlayerController : MonoBehaviour
     {
         foreach (Transform eachChild in items.transform)
         {
-            eachChild.GetComponent<ItemController>().Respawn();
+            // eachChild.GetComponent<ItemController>().Respawn();
+            if (eachChild.GetComponent<ChestController>() != null)
+            {
+                eachChild.GetComponent<ChestController>().Respawn();
+            }
+            else
+            {
+                eachChild.GetComponent<ItemController>().Respawn();
+            }
         }
     }
 

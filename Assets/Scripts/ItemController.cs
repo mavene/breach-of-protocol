@@ -12,13 +12,20 @@ public class ItemController : MonoBehaviour
     // Animation
     public Animator itemAnimator;
 
+    // Audio
+    public AudioSource audioSource;
+    public AudioClip rewardSound;
+
     // Start is called before the first frame update
     void Start()
     {
         startPosition = transform.localPosition;
 
-        scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
         itemAnimator = GetComponent<Animator>();
+
+        audioSource = GetComponent<AudioSource>();
+
+        scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
     }
 
     void Update()
@@ -31,9 +38,9 @@ public class ItemController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
+            audioSource.PlayOneShot(rewardSound);
             scorer.UpdateScore();
             gameObject.SetActive(false);
-            //Destroy(gameObject);
         }
     }
 
