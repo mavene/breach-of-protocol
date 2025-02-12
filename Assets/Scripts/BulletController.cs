@@ -1,11 +1,16 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+
 public class BulletController : MonoBehaviour
 {
-    public float bulletLifetime = 0.5f;
-private AudioSource audioSource;
-public AudioClip bulletSound;
+    // State
+    private float bulletLifetime = 0.5f;
+
+    // Audio
+    private AudioSource audioSource;
+    public AudioClip bulletSound;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -22,7 +27,6 @@ public AudioClip bulletSound;
     private IEnumerator DestroyDelay()
     {
         yield return new WaitForSeconds(bulletLifetime);
-        
         Destroy(gameObject);
     }
 

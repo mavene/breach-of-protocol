@@ -4,15 +4,15 @@ using UnityEngine;
 // Enemy FSM 
 public enum EnemyState
 {
-    Wander,
-    Follow,
+    Idle,
+    Chase,
     Die
 };
 
 public class EnemyController : MonoBehaviour
 {
     // State
-    public EnemyState currentState = EnemyState.Wander;
+    public EnemyState currentState = EnemyState.Idle;
     public Vector3 startPosition;
     public float range = 5f;
 
@@ -22,17 +22,30 @@ public class EnemyController : MonoBehaviour
     private bool choosingDirection = false;
     private Vector3 randomDirection;
 
+    // Animation
+    public Animator enemyAnimator;
+    private bool isDeathAnimationStarted = false;
+
+    // Audio
+    public AudioSource audioSource;
+    public AudioClip chaseActiveSound;
+    public AudioClip chaseInactiveSound;
+    public AudioClip deathSound;
+    private bool firstTrigger = true;
+
     // Player interactions
     private GameObject player;
 
     // Start is called before the first frame update
     void Start()
     {
-        // TODO: Track original orientation for respawn
         startPosition = transform.localPosition;
 
         enemyBody = GetComponent<Rigidbody2D>();
         enemyBody.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+        enemyAnimator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
 
         player = GameObject.FindGameObjectWithTag("Player");
     }
@@ -40,26 +53,58 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        switch (currentState)
+        HandleStates();
+        HandleAnimations();
+    }
+
+    private void HandleStates()
+    {
+        if (currentState == EnemyState.Die)
         {
-            case (EnemyState.Wander):
-                Wander();
-                break;
-            case (EnemyState.Follow):
-                Follow();
-                break;
-            case (EnemyState.Die):
-                Die();
-                break;
+            return;
         }
 
         if (IsPlayerInRange(range) && currentState != EnemyState.Die)
         {
-            currentState = EnemyState.Follow;
+            currentState = EnemyState.Chase;
+
+            //audioSource.PlayOneShot(chaseActiveSound);
         }
         else
         {
-            currentState = EnemyState.Wander;
+            currentState = EnemyState.Idle;
+            //audioSource.PlayOneShot(chaseActiveSound);
+        }
+
+        switch (currentState)
+        {
+            case (EnemyState.Idle):
+                Wander();
+                break;
+            case (EnemyState.Chase):
+                Chase();
+                break;
+        }
+    }
+
+    private void HandleAnimations()
+    {
+        switch (currentState)
+        {
+            case (EnemyState.Idle):
+                enemyAnimator.Play("enemy-idle");
+                break;
+            case (EnemyState.Chase):
+                enemyAnimator.Play("enemy-chase");
+                break;
+            case (EnemyState.Die):
+                if (!isDeathAnimationStarted)
+                {
+                    isDeathAnimationStarted = true;
+                    enemyAnimator.SetBool("isDead", currentState == EnemyState.Die);
+                    StartCoroutine(HideDelay());
+                }
+                break;
         }
     }
 
@@ -80,7 +125,7 @@ public class EnemyController : MonoBehaviour
         transform.position += -transform.right * speed * Time.deltaTime;
     }
 
-    private void Follow()
+    private void Chase()
     {
         transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
     }
@@ -88,13 +133,17 @@ public class EnemyController : MonoBehaviour
     public void Die()
     {
         currentState = EnemyState.Die;
-        gameObject.SetActive(false);
+        enemyBody.velocity = Vector2.zero;
+        isDeathAnimationStarted = false;
+        //StartCoroutine(HideDelay());
+        //gameObject.SetActive(false);
         //Destroy(gameObject); // Rationale for removing this is I want to use SetActive instead
     }
 
     public void Respawn()
     {
-        currentState = EnemyState.Wander;
+        currentState = EnemyState.Idle;
+        isDeathAnimationStarted = false;
         gameObject.SetActive(true);
         gameObject.transform.localPosition = startPosition;
     }
@@ -107,5 +156,22 @@ public class EnemyController : MonoBehaviour
         Quaternion nextRotation = Quaternion.Euler(randomDirection);
         transform.rotation = Quaternion.Lerp(transform.rotation, nextRotation, UnityEngine.Random.Range(0.5f, 2.5f));
         choosingDirection = false;
+    }
+
+    private IEnumerator HideDelay()
+    {
+        while (!enemyAnimator.GetCurrentAnimatorStateInfo(0).IsName("enemy-death"))
+        {
+            yield return null;
+        }
+
+        audioSource.PlayOneShot(deathSound);
+        yield return new WaitForSeconds(deathSound.length);
+
+        while (enemyAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
+        {
+            yield return null;
+        }
+        gameObject.SetActive(false);
     }
 }
