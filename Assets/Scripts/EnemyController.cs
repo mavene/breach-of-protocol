@@ -31,7 +31,6 @@ public class EnemyController : MonoBehaviour
     public AudioClip chaseActiveSound;
     public AudioClip chaseInactiveSound;
     public AudioClip deathSound;
-    private bool firstTrigger = true;
 
     // Player interactions
     private GameObject player;

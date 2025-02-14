@@ -11,8 +11,10 @@ public enum PlayerState
 
 public class PlayerController : MonoBehaviour
 {
-    // Position
+    // State
     private Vector3 startPosition;
+    private bool faceRightState;
+    private SpriteRenderer playerSprite;
 
     // Movement
     public float moveSpeed = 5f;
@@ -48,6 +50,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         startPosition = transform.localPosition;
+        playerSprite = GetComponent<SpriteRenderer>();
 
         playerBody = GetComponent<Rigidbody2D>();
         playerBody.constraints = RigidbodyConstraints2D.FreezeRotation; //disallow rotation especially after colliding
@@ -67,10 +70,6 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         ApplyMovement();
-        // if ((attackInput.x != 0 || attackInput.y != 0) && Time.time > lastFire + fireDelay)
-        // {
-        //     Shoot(attackInput);
-        // }
         if ((attackInput.x != 0 || attackInput.y != 0) && Time.time > lastFire + fireDelay)
         {
             //if attackInput is going to the top or bottom, shoot vertically
@@ -110,10 +109,26 @@ public class PlayerController : MonoBehaviour
         else if (moveInput.x != 0 || moveInput.y != 0)
         {
             currentState = PlayerState.Run;
+            FlipPlayerSprite();
         }
         else
         {
             currentState = PlayerState.Idle;
+        }
+    }
+
+    void FlipPlayerSprite()
+    {
+        // Handle flipping
+        if (moveInput.x < 0 && faceRightState)
+        {
+            faceRightState = false;
+            playerSprite.flipX = true;
+        }
+        if (moveInput.x > 0 && !faceRightState)
+        {
+            faceRightState = true;
+            playerSprite.flipX = false;
         }
     }
 
@@ -182,7 +197,7 @@ public class PlayerController : MonoBehaviour
     {
         // Reset player
         playerBody.transform.localPosition = startPosition;
-        //faceRightState = true;
+        faceRightState = true;
 
         // Reset scores
         scorer.ResetScore();
