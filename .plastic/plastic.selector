@@ -1,4 +1,0 @@
-repository "BindingOfIsaac/BindingOfIsaac@18968097663215@cloud"
-  path "/"
-    br "/main"
-    co "/main"

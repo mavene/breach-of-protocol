@@ -8,6 +8,7 @@ TagManager:
   - Bullet
   - Enemy
   - Chest
+  - Slime
   layers:
   - Default
   - TransparentFX
