@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class BulletController : MonoBehaviour
@@ -16,12 +15,6 @@ public class BulletController : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
         StartCoroutine(DestroyDelay());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     private IEnumerator DestroyDelay()
