@@ -23,7 +23,7 @@ public class ScoreController : MonoBehaviour
         inGameScoreText.text = "Score: " + score.ToString();
         //gameOverScoreText.text = inGameScoreText.text;
     }
-    public void UpdateScore5()
+    public void UpdateScore3()
     {
         score+=3;
         inGameScoreText.text = "Score: " + score.ToString();

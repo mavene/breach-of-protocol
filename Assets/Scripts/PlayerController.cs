@@ -37,6 +37,7 @@ public class PlayerController : MonoBehaviour
     // Game State
     // TODO: Shift this part to overall GameController
     public GameObject enemies;
+    public GameObject slime;
     public GameObject items;
 
     public PlayerState currentState = PlayerState.Idle;
@@ -158,6 +159,7 @@ public class PlayerController : MonoBehaviour
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         bullet.transform.Rotate(0, 0, angle);
         lastFire = Time.time;
+        Destroy(bullet, 0.5f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -190,6 +192,7 @@ public class PlayerController : MonoBehaviour
         // Reset items and enemies
         ResetItems();
         ResetEnemies();
+        ResetSlime();
 
         // Hide Game Over Screen
         uiManager.ResetUI();
@@ -220,6 +223,15 @@ public class PlayerController : MonoBehaviour
         {
             eachChild.GetComponent<EnemyController>().Respawn();
             eachChild.transform.localPosition = eachChild.GetComponent<EnemyController>().startPosition;
+        }
+    }
+
+    private void ResetSlime()
+    {
+        foreach (Transform eachChild in slime.transform)
+        {
+            eachChild.GetComponent<SlimeController>().Respawn();
+            eachChild.transform.localPosition = new Vector3(5.3f,2.5f,0f);
         }
     }
 

@@ -30,15 +30,23 @@ public class SlimeController : MonoBehaviour
     public Animator slimeAnimator;
     private bool isDeathAnimationStarted = false;
 
+// Attack
+    public GameObject SlimeAttackPrefab;
+    public float bulletSpeed;
+    public float fireRate;
+    private float lastFireTime;
+    private Vector2 attackInput;
+     private float lastFire;
     // Audio
     public AudioSource audioSource;
     public AudioClip chaseActiveSound;
     public AudioClip chaseInactiveSound;
     public AudioClip deathSound;
-    private bool firstTrigger = true;
 
     // Player interactions
     private GameObject player;
+
+    public ScoreController scorer;
 
     // Start is called before the first frame update
     void Start()
@@ -58,7 +66,7 @@ public class SlimeController : MonoBehaviour
         path = new Vector2[] { topLeft, topRight, bottomRight, bottomLeft };
 
         // Start at top-left corner
-        transform.position = topLeft;
+        transform.position = topRight;
     }
 
     // Update is called once per frame
@@ -67,7 +75,44 @@ public class SlimeController : MonoBehaviour
         HandleStates();
         HandleAnimations();
     }
+    void FixedUpdate()
+{
+    // Ensure player is still valid before accessing it
+    if (player == null)
+    {
+        Debug.LogError("❌ ERROR: Player reference is NULL! Cannot shoot.");
+        return;
+    }
 
+    if (currentState == SlimeState.Chase)
+    {
+        // Check if enough time has passed since last shot
+        if (Time.time >= lastFireTime + fireRate)
+        {
+            Vector2 direction = (player.transform.position - transform.position).normalized;
+
+            // Ensure direction is valid before shooting
+            if (direction != Vector2.zero)
+            {
+                Shoot(direction);
+                lastFireTime = Time.time; // Reset cooldown
+            }
+            else
+            {
+                Debug.LogWarning("⚠ Warning: Attempted to shoot but direction is zero.");
+            }
+        }
+    }
+}
+
+public void Respawn()
+    {
+        currentState = SlimeState.Idle;
+        // isDeathAnimationStarted = false;
+        transform.position = topLeft;
+        gameObject.SetActive(true);
+        gameObject.transform.localPosition = startPosition;
+    }
     private void HandleStates()
     {
         if (currentState == SlimeState.Die)
@@ -79,6 +124,7 @@ public class SlimeController : MonoBehaviour
         {
             currentState = SlimeState.Chase;
             Chase();
+            
             //audioSource.PlayOneShot(chaseActiveSound);
         }
         else
@@ -198,9 +244,47 @@ public class SlimeController : MonoBehaviour
         currentState = SlimeState.Die;
         slimeBody.velocity = Vector2.zero;
         isDeathAnimationStarted = false;
-        //StartCoroutine(HideDelay());
-        //gameObject.SetActive(false);
+        StartCoroutine(HideDelay());
+        scorer.UpdateScore3();
+        // gameObject.SetActive(false);
         //Destroy(gameObject); // Rationale for removing this is I want to use SetActive instead
+    }
+    private IEnumerator HideDelay()
+    {
+        slimeAnimator.Play("slime-death");
+        yield return new WaitForSeconds(0.6f);
+        gameObject.SetActive(false);
+        // Destroy(gameObject);
+    }
+
+    private void Shoot(Vector2 direction)
+    {
+        if (SlimeAttackPrefab == null)
+    {
+        Debug.LogError("❌ ERROR: SlimeAttackPrefab is NULL! Cannot instantiate.");
+        return;
+    }
+        GameObject attack = Instantiate(SlimeAttackPrefab, transform.position, transform.rotation) as GameObject;
+        //debug log all 3 inputs 
+        Debug.Log("Bullet position: " + transform.position);
+        Debug.Log("Bullet rotation: " + transform.rotation);
+        Debug.Log("Bullet direction: " + direction);
+        attack.AddComponent<Rigidbody2D>().gravityScale = 0;
+        // attack.GetComponent<Rigidbody2D>().velocity = new Vector3(
+        //     (direction.x < 0) ? Mathf.Floor(direction.x) * bulletSpeed : Mathf.Ceil(direction.x) * bulletSpeed,
+        //     (direction.y < 0) ? Mathf.Floor(direction.y) * bulletSpeed : Mathf.Ceil(direction.y) * bulletSpeed,
+        //     0
+        // );
+        attack.GetComponent<Rigidbody2D>().velocity = new Vector3(
+            direction.x * bulletSpeed,
+            direction.y * bulletSpeed,
+            0
+        );
+        // float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        // attack.transform.Rotate(0, 0, angle);
+        lastFire = Time.time;
+        Destroy(attack, 1f);
+
     }
 
 }

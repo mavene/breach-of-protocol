@@ -15,7 +15,7 @@ public class BulletController : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        StartCoroutine(DestroyDelay());
+        // StartCoroutine(DestroyDelay());
     }
 
     // Update is called once per frame
@@ -24,11 +24,11 @@ public class BulletController : MonoBehaviour
 
     }
 
-    private IEnumerator DestroyDelay()
-    {
-        yield return new WaitForSeconds(bulletLifetime);
-        Destroy(gameObject);
-    }
+    // private IEnumerator DestroyDelay()
+    // {
+    //     yield return new WaitForSeconds(bulletLifetime);
+    //     Destroy(gameObject);
+    // }
 
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -36,6 +36,12 @@ public class BulletController : MonoBehaviour
         {
             other.gameObject.GetComponent<EnemyController>().Die();
             Destroy(gameObject);
+        }
+        else if (other.gameObject.CompareTag("Slime"))
+        {
+            Debug.Log("Slime hit");
+            other.gameObject.GetComponent<SlimeController>().Die();
+            // Destroy(gameObject);
         }
     }
 }
