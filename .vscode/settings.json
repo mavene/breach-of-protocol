@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "binding-of-isaac-clone.sln"
+    "dotnet.defaultSolution": "BindingOfIsaac.sln"
 }

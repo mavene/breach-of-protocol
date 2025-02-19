@@ -45,7 +45,7 @@ public class ChestController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("Bullet"))
+        if (other.gameObject.CompareTag("PlayerProjectile"))
         {
             Destroy(other.gameObject);
             audioSource.PlayOneShot(hitSound);
@@ -59,7 +59,7 @@ public class ChestController : MonoBehaviour
             {
                 audioSource.PlayOneShot(rewardSound);
                 scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
-                scorer.UpdateScore();
+                scorer.UpdateScore(2);
                 animator.SetBool("isOpen", false);
                 animator.SetBool("reward", false);
                 StartCoroutine(RespawnChest());

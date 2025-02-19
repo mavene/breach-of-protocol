@@ -39,7 +39,7 @@ public class ItemController : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             audioSource.PlayOneShot(rewardSound);
-            scorer.UpdateScore();
+            scorer.UpdateScore(1);
             gameObject.SetActive(false);
         }
     }

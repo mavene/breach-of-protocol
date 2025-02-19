@@ -1,11 +1,10 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class BulletController : MonoBehaviour
 {
     // State
-    private float bulletLifetime = 0.5f;
+    private float bulletLifetime = 1f;
 
     // Audio
     private AudioSource audioSource;
@@ -18,12 +17,6 @@ public class BulletController : MonoBehaviour
         StartCoroutine(DestroyDelay());
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     private IEnumerator DestroyDelay()
     {
         yield return new WaitForSeconds(bulletLifetime);
@@ -32,9 +25,10 @@ public class BulletController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("Enemy"))
+        if (other.gameObject.CompareTag("Enemy") && gameObject.CompareTag("PlayerProjectile"))
         {
-            other.gameObject.GetComponent<EnemyController>().Die();
+            if (other.gameObject.GetComponent<EnemyController>() != null) other.gameObject.GetComponent<EnemyController>().Die();
+            if (other.gameObject.GetComponent<SlimeController>() != null) other.gameObject.GetComponent<SlimeController>().Die();
             Destroy(gameObject);
         }
     }

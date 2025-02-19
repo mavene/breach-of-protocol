@@ -17,15 +17,15 @@ public class ScoreController : MonoBehaviour
 
     // Update is called once per frame
 
-    public void UpdateScore()
+    public void UpdateScore(int value)
     {
-        score++;
+        score += value;
         inGameScoreText.text = "Score: " + score.ToString();
         //gameOverScoreText.text = inGameScoreText.text;
     }
     public void UpdateScore5()
     {
-        score+=3;
+        score += 3;
         inGameScoreText.text = "Score: " + score.ToString();
         //gameOverScoreText.text = inGameScoreText.text;
     }
