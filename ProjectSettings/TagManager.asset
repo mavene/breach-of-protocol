@@ -8,6 +8,8 @@ TagManager:
   - Bullet
   - Enemy
   - Chest
+  - PlayerProjectile
+  - EnemyProjectile
   layers:
   - Default
   - TransparentFX

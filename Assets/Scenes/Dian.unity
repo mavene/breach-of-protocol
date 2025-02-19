@@ -2193,6 +2193,87 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1001 &915974919
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1519514689}
+    m_Modifications:
+    - target: {fileID: 5191922130635128521, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_Name
+      value: Slime
+      objectReference: {fileID: 0}
+    - target: {fileID: 5191922130635128521, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6.42
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.81
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6641142607974036143, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: scorer
+      value: 
+      objectReference: {fileID: 562223027}
+    - target: {fileID: 6641142607974036143, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: fireRate
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6641142607974036143, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: SlimeAttackPrefab
+      value: 
+      objectReference: {fileID: 3070954111993447654, guid: 63cdd5f5072de664099b3455054f7b7b, type: 3}
+    - target: {fileID: 6641142607974036143, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: enemyProjAnimController
+      value: 
+      objectReference: {fileID: 22100000, guid: be9b2d7f4b281f34e8e7b7ee01991c94, type: 2}
+    - target: {fileID: 8120720545289615398, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+      propertyPath: m_SortingOrder
+      value: 3
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
 --- !u!1 &917144872
 GameObject:
   m_ObjectHideFlags: 0
@@ -3053,6 +3134,11 @@ Transform:
   - {fileID: 103278623}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1345894285 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6483053719378322367, guid: 7183be03a4f66de4c93e817f4f043004, type: 3}
+  m_PrefabInstance: {fileID: 915974919}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1482839182
 GameObject:
   m_ObjectHideFlags: 0
@@ -3217,6 +3303,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1708845708}
+  - {fileID: 1345894285}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1522528612
@@ -5978,7 +6065,7 @@ GameObject:
   - component: {fileID: 1708845715}
   - component: {fileID: 1708845714}
   m_Layer: 0
-  m_Name: Enemy
+  m_Name: Drone
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5993,7 +6080,7 @@ Transform:
   m_GameObject: {fileID: 1708845707}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.92, y: 3.56, z: 0}
+  m_LocalPosition: {x: -7.4, y: 2.87, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6013,9 +6100,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentState: 0
   startPosition: {x: 0, y: 0, z: 0}
-  range: 8.5
+  chaseRange: 5
+  shootRange: 0.2
   speed: 1
+  bulletPrefab: {fileID: 3070954111993447654, guid: 63cdd5f5072de664099b3455054f7b7b, type: 3}
+  bulletSpeed: 3
+  fireDelay: 0.7
   enemyAnimator: {fileID: 0}
+  enemyProjAnimController: {fileID: 22100000, guid: be9b2d7f4b281f34e8e7b7ee01991c94, type: 2}
   audioSource: {fileID: 0}
   chaseActiveSound: {fileID: 8300000, guid: d04684d0d78684646a63a3c60badc9f3, type: 3}
   chaseInactiveSound: {fileID: 8300000, guid: cec0fc869b8a6ce4d91b4227160ace56, type: 3}
@@ -6087,7 +6179,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_Sprite: {fileID: 1606401572, guid: ffc938ed6a0fd3f4ab84fea2ab955f26, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -6186,9 +6278,9 @@ AudioSource:
   m_GameObject: {fileID: 1708845707}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5848768948217276247, guid: f9a1e9b3c47d024499883a59f242b5f5, type: 2}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0

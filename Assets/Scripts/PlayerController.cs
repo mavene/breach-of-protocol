@@ -181,6 +181,7 @@ public class PlayerController : MonoBehaviour
     void Shoot(Vector2 direction)
     {
         GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
+        bullet.tag = "PlayerProjectile";
         bullet.AddComponent<Rigidbody2D>();
         bullet.GetComponent<Rigidbody2D>().gravityScale = 0;
         bullet.GetComponent<Rigidbody2D>().velocity = new Vector3(
@@ -196,7 +197,7 @@ public class PlayerController : MonoBehaviour
     // #------------------- TRIGGERS -------------------#
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("Enemy"))
+        if (other.gameObject.CompareTag("Enemy") || other.gameObject.CompareTag("EnemyProjectile"))
         {
             currentState = PlayerState.Die;
         }
@@ -277,8 +278,16 @@ public class PlayerController : MonoBehaviour
     {
         foreach (Transform eachChild in enemies.transform)
         {
-            eachChild.GetComponent<EnemyController>().Respawn();
-            eachChild.transform.localPosition = eachChild.GetComponent<EnemyController>().startPosition;
+            if (eachChild.GetComponent<EnemyController>() != null)
+            {
+                eachChild.GetComponent<EnemyController>().Respawn();
+                eachChild.transform.localPosition = eachChild.GetComponent<EnemyController>().startPosition;
+            }
+            else if (eachChild.GetComponent<SlimeController>() != null)
+            {
+                eachChild.GetComponent<SlimeController>().Respawn();
+                eachChild.transform.localPosition = eachChild.GetComponent<SlimeController>().startPosition;
+            }
         }
     }
 }
