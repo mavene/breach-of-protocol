@@ -25,6 +25,7 @@ public class SlimeController : MonoBehaviour
     private Vector2[] path; // Stores the ordered path
     private int currentTargetIndex = 0; // Index of the current corner target
     private SpriteRenderer spriteRenderer;
+    public GameObject portal;
 
     // Animation
     public Animator slimeAnimator;
@@ -49,6 +50,8 @@ public class SlimeController : MonoBehaviour
     private GameObject player;
 
     public ScoreController scorer;
+    private float movementSoundCooldown = 1.0f; // Cooldown between movement sounds
+    private float lastMovementSoundTime = 0f;
 
     // Start is called before the first frame update
     void Start()
@@ -78,34 +81,44 @@ public class SlimeController : MonoBehaviour
         HandleAnimations();
     }
     void FixedUpdate()
+{
+    // Ensure player is still valid before accessing it
+    if (player == null)
     {
-        // Ensure player is still valid before accessing it
-        if (player == null)
-        {
-            Debug.LogError("❌ ERROR: Player reference is NULL! Cannot shoot.");
-            return;
-        }
+        Debug.LogError("❌ ERROR: Player reference is NULL! Cannot shoot.");
+        return;
+    }
 
-        if (currentState == SlimeState.Chase)
+    // Check if player is dead
+    PlayerController playerController = player.GetComponent<PlayerController>();
+    if (playerController != null && playerController.currentState == PlayerState.Die)
+    {
+        // Debug.Log("⚠ Player is dead, Slime stops shooting.");
+        slimeBody.velocity = Vector2.zero;
+        return; // Stop shooting if the player is dead
+    }
+
+    if (currentState == SlimeState.Chase)
+    {
+        // Check if enough time has passed since last shot
+        if (Time.time >= lastFireTime + fireRate)
         {
-            // Check if enough time has passed since last shot
-            if (Time.time >= lastFireTime + fireRate)
+            Vector2 direction = (player.transform.position - transform.position).normalized;
+
+            // Ensure direction is valid before shooting
+            if (direction != Vector2.zero)
             {
-                Vector2 direction = (player.transform.position - transform.position).normalized;
-
-                // Ensure direction is valid before shooting
-                if (direction != Vector2.zero)
-                {
-                    Shoot(direction);
-                    lastFireTime = Time.time; // Reset cooldown
-                }
-                else
-                {
-                    Debug.LogWarning("⚠ Warning: Attempted to shoot but direction is zero.");
-                }
+                Shoot(direction);
+                lastFireTime = Time.time; // Reset cooldown
+            }
+            else
+            {
+                Debug.LogWarning("⚠ Warning: Attempted to shoot but direction is zero.");
             }
         }
     }
+}
+
 
     public void Respawn()
     {
@@ -114,6 +127,7 @@ public class SlimeController : MonoBehaviour
         transform.position = topLeft;
         gameObject.SetActive(true);
         gameObject.transform.localPosition = startPosition;
+        enabled = true;
     }
     private void HandleStates()
     {
@@ -163,42 +177,6 @@ public class SlimeController : MonoBehaviour
         return Vector3.Distance(transform.position, player.transform.position) <= range;
     }
 
-    // private void Wander()
-    // {
-
-    //     // Actually move in chosen direction
-    //     transform.position += -transform.right * speed * Time.deltaTime;
-    // }
-    private void Wander()
-    {
-        Vector2 targetPosition = path[currentTargetIndex]; // Get current target position
-
-        // Move toward the current target
-        transform.position = Vector2.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
-
-        // Flip sprite when moving left or right
-        if (targetPosition.x < transform.position.x)
-        {
-            spriteRenderer.flipX = true; // Moving left
-        }
-        else if (targetPosition.x > transform.position.x)
-        {
-            spriteRenderer.flipX = false; // Moving right
-        }
-
-        // If reached the target, move to the next point
-        if (Vector2.Distance(transform.position, targetPosition) < 0.1f)
-        {
-            currentTargetIndex = (currentTargetIndex + 1) % path.Length; // Loop through points
-        }
-
-        // If the slime leaves the path, correct its position
-        if (!IsOnPath(transform.position))
-        {
-            SnapToNearestCorner();
-        }
-    }
-
     private bool IsOnPath(Vector2 position)
     {
         // Check if within the rectangle bounds
@@ -227,16 +205,52 @@ public class SlimeController : MonoBehaviour
         currentTargetIndex = (closestIndex + 1) % path.Length;
     }
 
+    private void Wander()
+    {
+        Vector2 targetPosition = path[currentTargetIndex]; // Get current target position
+
+        // Move toward the current target
+        transform.position = Vector2.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+
+        // Flip sprite when moving left or right
+        spriteRenderer.flipX = targetPosition.x < transform.position.x;
+
+        // If reached the target, move to the next point
+        if (Vector2.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            currentTargetIndex = (currentTargetIndex + 1) % path.Length; // Loop through points
+        }
+
+        // If the slime leaves the path, correct its position
+        if (!IsOnPath(transform.position))
+        {
+            SnapToNearestCorner();
+        }
+
+        // ✅ Play movement sound every `movementSoundCooldown` seconds
+        if (audioSource != null && chaseActiveSound != null)
+        {
+            if (Time.time >= lastMovementSoundTime + movementSoundCooldown)
+            {
+                audioSource.PlayOneShot(chaseActiveSound);
+                lastMovementSoundTime = Time.time; // Reset cooldown timer
+            }
+        }
+    }
+
     private void Chase()
     {
         transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
-        if (player.transform.position.x < transform.position.x)
+        spriteRenderer.flipX = player.transform.position.x < transform.position.x;
+
+        // ✅ Play movement sound every `movementSoundCooldown` seconds
+        if (audioSource != null && chaseActiveSound != null)
         {
-            spriteRenderer.flipX = true; // Moving left
-        }
-        else if (player.transform.position.x > transform.position.x)
-        {
-            spriteRenderer.flipX = false; // Moving right
+            if (Time.time >= lastMovementSoundTime + movementSoundCooldown)
+            {
+                audioSource.PlayOneShot(chaseActiveSound);
+                lastMovementSoundTime = Time.time; // Reset cooldown timer
+            }
         }
     }
 
@@ -249,6 +263,25 @@ public class SlimeController : MonoBehaviour
         scorer.UpdateScore(3);
         //gameObject.SetActive(false);
         //Destroy(gameObject); // Rationale for removing this is I want to use SetActive instead
+        // Stop movement sound if playing
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
+
+        // Play death sound
+        if (audioSource != null && deathSound != null)
+        {
+            audioSource.PlayOneShot(deathSound);
+        }
+        if (portal != null)
+        {
+            portal.SetActive(true);
+            Debug.Log("Portal activated!");
+        }
+        else{
+            Debug.Log("Portal is NULL!");
+        }
     }
     private IEnumerator HideDelay()
     {
@@ -280,5 +313,18 @@ public class SlimeController : MonoBehaviour
         Destroy(attack, 1f);
 
     }
+    public void StopSlimeMovement()
+    {
+        Debug.Log("Slime stopped moving because player died.");
+        currentState = SlimeState.Idle; // Change state to Idle
+        slimeBody.velocity = Vector2.zero; // Stop movement
+        slimeBody.isKinematic = true; // Disable physics
+        enabled = false;
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
+    }
+
 
 }

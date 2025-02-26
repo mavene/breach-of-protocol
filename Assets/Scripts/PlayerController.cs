@@ -138,6 +138,7 @@ public class PlayerController : MonoBehaviour
                 break;
             case (PlayerState.Die):
                 // This conditional prevents loops since we are deactivating the gameObject
+                StopAllSlimes();
                 if (!isDeathStarted)
                 {
                     isDeathStarted = true;
@@ -226,8 +227,28 @@ public class PlayerController : MonoBehaviour
         {
             currentState = PlayerState.Die;
             playerBody.velocity = Vector2.zero; 
-        playerBody.isKinematic = true;
+            playerBody.isKinematic = true;
+            if(other.gameObject.CompareTag("EnemyProjectile"))
+            {
+                Destroy(other.gameObject);
+            }
+            if(GameManager.instance != null)
+            {
+                GameManager.instance.StopMusic();
+            }
+            StopAllSlimes();
         }
+    }
+    private void StopAllSlimes()
+    {
+        SlimeController[] allSlimes = FindObjectsOfType<SlimeController>();
+
+        foreach (SlimeController slime in allSlimes)
+        {
+            slime.StopSlimeMovement();  // Call StopSlimeMovement() in SlimeController
+        }
+
+        Debug.Log("All Slimes stopped moving.");
     }
 
     // #------------------ COROUTINES --------------------
@@ -282,6 +303,7 @@ public class PlayerController : MonoBehaviour
         // Reset items and enemies
         ResetItems();
         ResetEnemies();
+        ClearAllBullets();
 
         // Hide Game Over Screen
         uiManager.ResetUI();
@@ -306,7 +328,6 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-
     private void ResetEnemies()
     {
         foreach (Transform eachChild in enemies.transform)
@@ -323,4 +344,14 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+    private void ClearAllBullets()
+{
+    BulletController[] bullets = FindObjectsOfType<BulletController>(); // Find all bullets
+    foreach (BulletController bullet in bullets)
+    {
+        Destroy(bullet.gameObject);
+    }
+    Debug.Log("Destroyed all bullets.");
 }
+}
+

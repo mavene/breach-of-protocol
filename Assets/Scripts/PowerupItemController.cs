@@ -32,25 +32,30 @@ public class PowerupItemController : MonoBehaviour
     }
 
     void OnTriggerEnter2D(Collider2D other)
+{
+    if (other.gameObject.CompareTag("Player"))
     {
-        if (other.gameObject.CompareTag("Player"))
+        Debug.Log("✅ Player picked up power-up!");
+
+        // ✅ Play sound at player's location to ensure it's heard
+        if (powerupSound != null)
         {
-            if (powerupSound != null)
-            {
-                audioSource.PlayOneShot(powerupSound);
-            }
-            else
-            {
-                Debug.LogWarning("Powerup sound is missing!");
-            }
-
-            playerController.ActivateSpeedBoost();
-
-            GameManager.instance.StartRespawnPowerupCoroutine(this, 8f); // Call GameManager to respawn
-
-            gameObject.SetActive(false); // Deactivate object
+            AudioSource.PlayClipAtPoint(powerupSound, Camera.main.transform.position, 1.0f); // Play at full volume near the camera
+            Debug.Log("✅ Power-up sound played globally!");
         }
+        else
+        {
+            Debug.LogError("❌ PowerupItemController: powerupSound is missing!");
+        }
+
+        playerController.ActivateSpeedBoost();
+
+        GameManager.instance.StartRespawnPowerupCoroutine(this, 8f);
+        gameObject.SetActive(false);
     }
+}
+
+
 
     public void Restart()
     {

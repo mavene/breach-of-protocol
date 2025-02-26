@@ -2,6 +2,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
     public GameObject pauseIcon;  // Assign Pause Sprite GameObject
     public GameObject resumeIcon; // Assign Resume Sprite GameObject
+    private AudioSource audioSource;
+    public AudioClip backgroundMusic;
     private bool isPaused = false;
     private void Start()
     {
@@ -18,6 +21,18 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         instance = this;
+        DontDestroyOnLoad(gameObject);
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // Play Background Music
+        audioSource.clip = backgroundMusic;
+        audioSource.loop = true;
+        audioSource.volume = 0.5f; // Adjust volume as needed
+        audioSource.Play();
     }
     void Update()
     {
@@ -102,4 +117,18 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Game Over! High Score: " + gameScore.highestValue);
     }
+    public void LoadNextScene(string sceneName)
+    {
+        Debug.Log("Loading Scene: " + sceneName);
+        SceneManager.LoadScene(sceneName);
+    }
+    public void StopMusic()
+{
+    if (audioSource != null && audioSource.isPlaying)
+    {
+        audioSource.Stop();
+        Debug.Log("Background music stopped.");
+    }
+}
+
 }

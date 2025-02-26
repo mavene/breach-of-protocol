@@ -25,11 +25,24 @@ public class BulletController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log("Bullet collided with: " + other.gameObject.name); // Check what the bullet hits
+
         if (other.gameObject.CompareTag("Enemy") && gameObject.CompareTag("PlayerProjectile"))
         {
-            if (other.gameObject.GetComponent<EnemyController>() != null) other.gameObject.GetComponent<EnemyController>().Die();
-            if (other.gameObject.GetComponent<SlimeController>() != null) other.gameObject.GetComponent<SlimeController>().Die();
+            Debug.Log("Hit Enemy: " + other.gameObject.name); // Check if it recognizes the enemy
+
+            if (other.gameObject.GetComponent<EnemyController>() != null)
+            {
+                other.gameObject.GetComponent<EnemyController>().Die();
+            }
+            if (other.gameObject.GetComponent<SlimeController>() != null)
+            {
+                other.gameObject.GetComponent<SlimeController>().Die();
+            }
+
+            Debug.Log("Destroying bullet: " + gameObject.name);
             Destroy(gameObject);
         }
-    }
+}
+
 }
