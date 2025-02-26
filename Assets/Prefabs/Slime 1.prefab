@@ -130,7 +130,8 @@ MonoBehaviour:
   bottomLeft: {x: -5.3, y: -2.5}
   bottomRight: {x: 5.3, y: -2.5}
   slimeAnimator: {fileID: 7254956629466977196}
-  SlimeAttackPrefab: {fileID: 0}
+  enemyProjAnimController: {fileID: 0}
+  SlimeAttackPrefab: {fileID: 3070954111993447654, guid: 63cdd5f5072de664099b3455054f7b7b, type: 3}
   bulletSpeed: 7.5
   fireRate: 5
   audioSource: {fileID: 0}

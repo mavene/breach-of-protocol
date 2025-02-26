@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
     // Movement
     private Vector3 startPosition;
     public float moveSpeed = 5f;
+    private float defaultSpeed;  // Store default speed
+    private bool isSpeedBoostActive = false; 
     private Vector2 moveInput;
 
     // Attack
@@ -60,6 +62,8 @@ public class PlayerController : MonoBehaviour
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
         scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
         audioSource = GetComponent<AudioSource>();
+
+        defaultSpeed = moveSpeed;
     }
 
     void Update()
@@ -74,6 +78,27 @@ public class PlayerController : MonoBehaviour
         {
             Move(moveInput);
         }
+    }
+
+    public void ActivateSpeedBoost()
+    {
+        if (!isSpeedBoostActive)  // Prevent multiple activations
+        {
+            StartCoroutine(SpeedBoostCoroutine());
+        }
+    }
+
+    private IEnumerator SpeedBoostCoroutine()
+    {
+        isSpeedBoostActive = true;
+        moveSpeed *= 2f;  // Double speed
+        Debug.Log("Speed Boost Activated!");
+
+        yield return new WaitForSeconds(5f);  // Wait for 5 seconds
+
+        moveSpeed = defaultSpeed;  // Reset speed
+        isSpeedBoostActive = false;
+        Debug.Log("Speed Boost Ended.");
     }
 
     // #-------------------- HANDLERS ---------------------#
@@ -200,6 +225,8 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("Enemy") || other.gameObject.CompareTag("EnemyProjectile"))
         {
             currentState = PlayerState.Die;
+            playerBody.velocity = Vector2.zero; 
+        playerBody.isKinematic = true;
         }
     }
 
@@ -246,6 +273,8 @@ public class PlayerController : MonoBehaviour
         gameObject.SetActive(true);
         playerBody.transform.localPosition = startPosition;
         //playerAnimator.Update(0f);
+        moveSpeed = defaultSpeed;
+        isSpeedBoostActive = false;
 
         // Reset scores
         scorer.ResetScore();
@@ -266,6 +295,10 @@ public class PlayerController : MonoBehaviour
             if (eachChild.GetComponent<ChestController>() != null)
             {
                 eachChild.GetComponent<ChestController>().Respawn();
+            }
+            else if (eachChild.GetComponent<PowerupItemController>() != null)
+            {
+                eachChild.GetComponent<PowerupItemController>().Restart();
             }
             else
             {
