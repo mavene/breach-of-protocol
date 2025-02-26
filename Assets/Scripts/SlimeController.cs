@@ -255,34 +255,38 @@ public class SlimeController : MonoBehaviour
     }
 
     public void Die()
-    {
-        currentState = SlimeState.Die;
-        slimeBody.velocity = Vector2.zero;
-        isDeathAnimationStarted = false;
-        StartCoroutine(HideDelay());
-        scorer.UpdateScore(3);
-        //gameObject.SetActive(false);
-        //Destroy(gameObject); // Rationale for removing this is I want to use SetActive instead
-        // Stop movement sound if playing
-        if (audioSource != null && audioSource.isPlaying)
-        {
-            audioSource.Stop();
-        }
+{
+    currentState = SlimeState.Die;
+    slimeBody.velocity = Vector2.zero;
+    isDeathAnimationStarted = false;
+    StartCoroutine(HideDelay());
+    scorer.UpdateScore(3);
 
-        // Play death sound
-        if (audioSource != null && deathSound != null)
-        {
-            audioSource.PlayOneShot(deathSound);
-        }
-        if (portal != null)
-        {
-            portal.SetActive(true);
-            Debug.Log("Portal activated!");
-        }
-        else{
-            Debug.Log("Portal is NULL!");
-        }
+    // ✅ Stop movement sound if playing
+    if (audioSource != null && audioSource.isPlaying)
+    {
+        audioSource.Stop();
     }
+
+    // ✅ Play death sound
+    if (audioSource != null && deathSound != null)
+    {
+        audioSource.PlayOneShot(deathSound);
+    }
+
+    // ✅ Spawn portal where the Slime died
+    if (portal != null)
+    {
+        portal.transform.position = transform.position; // Set portal position to Slime’s last position
+        portal.SetActive(true);
+        Debug.Log("✅ Portal spawned at: " + transform.position);
+    }
+    else
+    {
+        Debug.Log("❌ Portal is NULL!");
+    }
+}
+
     private IEnumerator HideDelay()
     {
         slimeAnimator.Play("slime-death");
