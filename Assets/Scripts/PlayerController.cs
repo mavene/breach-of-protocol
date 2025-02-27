@@ -48,6 +48,7 @@ public class PlayerController : MonoBehaviour
     public GameObject enemies;
     public GameObject items;
 
+
     void Start()
     {
         playerSprite = GetComponent<SpriteRenderer>();
@@ -296,7 +297,7 @@ public class PlayerController : MonoBehaviour
         //playerAnimator.Update(0f);
         moveSpeed = defaultSpeed;
         isSpeedBoostActive = false;
-
+        GameManager.instance.ResetGame();
         // Reset scores
         scorer.ResetScore();
 
