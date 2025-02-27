@@ -6569,7 +6569,7 @@ Tilemap:
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.0012200644, g: 0, b: 0.9622642, a: 1}
   m_Origin: {x: -9, y: -5, z: 0}
   m_Size: {x: 18, y: 10, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
@@ -7539,6 +7539,7 @@ MonoBehaviour:
   gameScore: {fileID: 11400000, guid: b36326799cc1945faa9c8551ac3e6399, type: 2}
   pauseIcon: {fileID: 1267829584}
   resumeIcon: {fileID: 1351092446}
+  backgroundMusic: {fileID: 0}
 --- !u!4 &1950974940
 Transform:
   m_ObjectHideFlags: 0
