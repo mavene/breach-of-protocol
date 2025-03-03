@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class BulletController : MonoBehaviour
+public class BulletController : MonoBehaviour, IDeflectable
 {
     // State
     private float bulletLifetime = 1f;
@@ -31,5 +31,11 @@ public class BulletController : MonoBehaviour
             if (other.gameObject.GetComponent<SlimeController>() != null) other.gameObject.GetComponent<SlimeController>().Die();
             Destroy(gameObject);
         }
+    }
+
+    public void Deflect(Vector2 direction)
+    {
+        GetComponent<Rigidbody2D>().velocity = direction * 7f;
+        gameObject.tag = "DeflectedProjectile";
     }
 }

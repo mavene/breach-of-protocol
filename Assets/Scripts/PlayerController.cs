@@ -7,6 +7,7 @@ public enum PlayerState
     Idle,
     Run,
     Shoot,
+    Deflect,
     Die
 };
 
@@ -34,6 +35,14 @@ public class PlayerController : MonoBehaviour
     public float fireDelay = 1f;
     private float lastFire;
     private Vector2 attackInput;
+
+    // Deflect
+    public float deflectRange = 2f;
+    public float deflectArcAngle = 100f;
+    public float deflectCooldown = 0.5f;
+    private float lastDeflectTime;
+    private Vector2 lastMoveDirection;
+    private Vector2 aimDirection;
 
     // Animation
     private Animator playerAnimator;
@@ -66,6 +75,7 @@ public class PlayerController : MonoBehaviour
     {
         HandleStates();
         HandleAnimations();
+        HandleAim();
     }
 
     void FixedUpdate()
@@ -124,6 +134,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void HandleAim()
+    {
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        aimDirection = (mousePos - (Vector2)transform.position).normalized;
+    }
+
     // #-------------------- SUBSCRIBERS ------------------#
     // Subscriber - Movement
     public void MoveCheck(Vector2 value1, int value2)
@@ -133,6 +149,8 @@ public class PlayerController : MonoBehaviour
             moveInput = Vector2.zero;
         }
         moveInput = value1;
+        lastMoveDirection = moveInput.normalized;
+
         if (moveInput.x != 0)  // Only flip if there's horizontal movement
         {
             FlipPlayerSprite(value2);
@@ -194,7 +212,40 @@ public class PlayerController : MonoBehaviour
         lastFire = Time.time;
     }
 
+    // Subscriber - Deflect
+    public void DeflectCheck()
+    {
+        Debug.Log("Start deflect");
+        if (currentState == PlayerState.Die || Time.time < lastDeflectTime + deflectCooldown)
+            return;
+
+        lastDeflectTime = Time.time;
+        Vector2 arcDir = lastMoveDirection;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, deflectRange);
+
+        foreach (Collider2D hit in hits)
+        {
+            IDeflectable projectile = hit.GetComponent<IDeflectable>();
+            if (projectile == null) continue;
+
+            if (hit.gameObject.CompareTag("DeflectedProjectile")) continue;
+
+            Vector2 dirToProjectile = (hit.transform.position - transform.position).normalized;
+
+            float angle = Vector2.Angle(arcDir, dirToProjectile);
+
+            if (angle <= deflectArcAngle / 2)
+            {
+                hit.gameObject.tag = "DeflectedProjectile";
+                projectile.Deflect(aimDirection);
+            }
+        }
+        Debug.Log("End deflect");
+    }
+
     // #------------------- TRIGGERS -------------------#
+    // TODO: TEMP DISABLED FOR DEFLECTS
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.CompareTag("Enemy") || other.gameObject.CompareTag("EnemyProjectile"))

@@ -26,7 +26,7 @@
                 {
                     "name": "reflect",
                     "type": "Button",
-                    "id": "f72d34d7-9526-47c7-8773-b62c53da2cd8",
+                    "id": "00da27f0-e059-4ab1-86be-b2adc887c69c",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -146,8 +146,8 @@
                 },
                 {
                     "name": "",
-                    "id": "e1878947-995a-4230-a16e-9de0f82abf77",
-                    "path": "<Keyboard>/z",
+                    "id": "f0adb257-fa0b-492f-8bc8-13e0c86cf222",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",

@@ -11,8 +11,8 @@ public class ActionManager : MonoBehaviour
     // Attack Event
     public UnityEvent<Vector2> attackCheck;
 
-    // Reflect Event
-    public UnityEvent reflectCheck;
+    // Deflect Event
+    public UnityEvent deflectCheck;
 
     public void OnMoveAction(InputAction.CallbackContext context)
     {
@@ -38,6 +38,14 @@ public class ActionManager : MonoBehaviour
         else if (context.canceled)
         {
             attackCheck.Invoke(Vector2.zero);
+        }
+    }
+
+    public void OnDeflectAction(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            deflectCheck.Invoke();
         }
     }
 }
