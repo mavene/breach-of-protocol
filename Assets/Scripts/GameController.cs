@@ -41,7 +41,7 @@ public class GameController : Singleton<GameController>
     public void GameOver()
     {
         Time.timeScale = 0.0f;
-        gameOver.Invoke(); // Calls ShowGameOver (UI)
+        gameOver.Invoke(); // Calls UpdateHighScore (Scorer), ShowGameOver (UI)
     }
 
     private void ResetItems()

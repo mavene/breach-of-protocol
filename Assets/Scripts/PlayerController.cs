@@ -14,7 +14,11 @@ public enum PlayerState
 
 public class PlayerController : MonoBehaviour
 {
+    // ScriptableObject constants
+    public GameConstants gameConstants;
+
     // Events
+    public UnityEvent<int> updateHealth;
     public UnityEvent onPlayerDeath;
 
     // Player Components
@@ -23,27 +27,29 @@ public class PlayerController : MonoBehaviour
 
     // State
     public PlayerState currentState = PlayerState.Idle;
+    private int maxLives;
+    private int currentLives;
 
     // Conditionals
-    public bool faceRightState = true;
+    private bool faceRightState = true;
     private bool isDeathStarted = false;
 
     // Movement
     private Vector3 startPosition;
-    public float moveSpeed = 5f;
+    private float moveSpeed;
     private Vector2 moveInput;
 
     // Attack
     public GameObject bulletPrefab;
-    public float bulletSpeed = 2.5f;
-    public float fireDelay = 1f;
+    private float bulletSpeed;
+    private float fireDelay;
     private float lastFire;
     private Vector2 attackInput;
 
     // Deflect
-    public float deflectRange = 2f;
-    public float deflectArcAngle = 100f;
-    public float deflectCooldown = 0.5f;
+    public float deflectArcAngle;
+    public float deflectCooldown;
+    public float deflectRange;
     private float lastDeflectTime;
     private Vector2 lastMoveDirection;
     private Vector2 aimDirection;
@@ -67,6 +73,17 @@ public class PlayerController : MonoBehaviour
         playerAnimator.keepAnimatorStateOnDisable = true; // prevents sprite from resetting to a weird frame from previous death
 
         audioSource = GetComponent<AudioSource>();
+
+        // Set constants
+        maxLives = gameConstants.playerMaxLives;
+        moveSpeed = gameConstants.playerMoveSpeed;
+        bulletSpeed = gameConstants.playerBulletSpeed;
+        fireDelay = gameConstants.playerFireDelay;
+        deflectArcAngle = gameConstants.playerDeflectArcAngle;
+        deflectCooldown = gameConstants.playerDeflectCooldown;
+        deflectRange = gameConstants.playerDeflectRange;
+
+        currentLives = maxLives;
     }
 
     void Update()
@@ -259,6 +276,22 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Enemy") || other.gameObject.CompareTag("EnemyProjectile"))
         {
+            //currentState = PlayerState.Die;
+            Damage(1);
+        }
+    }
+
+    public void Damage(int damageAmount)
+    {
+        currentLives -= damageAmount;
+        updateHealth.Invoke(currentLives); // Calls UpdateHearts (UI)
+        HealthCheck();
+    }
+
+    private void HealthCheck()
+    {
+        if (currentLives <= 0)
+        {
             currentState = PlayerState.Die;
         }
     }
@@ -299,7 +332,8 @@ public class PlayerController : MonoBehaviour
     {
         currentState = PlayerState.Idle;
         isDeathStarted = false;
-        gameObject.SetActive(true);
+        currentLives = maxLives;
         playerBody.transform.localPosition = startPosition;
+        gameObject.SetActive(true);
     }
 }

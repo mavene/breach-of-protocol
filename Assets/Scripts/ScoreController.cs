@@ -5,29 +5,35 @@ using UnityEngine.SocialPlatforms.Impl;
 
 public class ScoreController : Singleton<ScoreController>
 {
+    // ScriptableObjects
+    public IntVariable gameScore;
+
     // Events
     public UnityEvent<int> scoreChange;
-
-    [System.NonSerialized]
-    private int score = 0; // Hide from inspector
+    public UnityEvent<int> highScoreChange;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        gameScore.Value = 0;
     }
 
     // Update is called once per frame
 
     public void UpdateScore(int value)
     {
-        score += value;
-        scoreChange.Invoke(score); // Calls ScoreChange (UI)
+        gameScore.ApplyChange(value);
+        scoreChange.Invoke(gameScore.Value); // Calls ScoreChange (UI)
+    }
+
+    public void UpdateHighscore()
+    {
+        highScoreChange.Invoke(gameScore.previousHighestValue); // Calls HighscoreChange (UI)
     }
 
     public void ResetScore()
     {
-        score = 0;
-        scoreChange.Invoke(score); // Calls ScoreChange (UI)
+        gameScore.SetValue(0);
+        scoreChange.Invoke(gameScore.Value); // Calls ScoreChange (UI)
     }
 }

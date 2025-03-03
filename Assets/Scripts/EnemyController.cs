@@ -13,17 +13,21 @@ public enum EnemyState
 
 public class EnemyController : MonoBehaviour
 {
+    // ScriptableObject constants
+    public GameConstants gameConstants;
+
     // Events
     public UnityEvent<int> onEnemyDeath;
 
     // State
     public EnemyState currentState = EnemyState.Idle;
+    private int maxLives;
     public Vector3 startPosition;
     public float chaseRange = 5f;
     public float shootRange = 0.2f;
 
     // Movement
-    public float speed = 1f;
+    public float moveSpeed = 1f;
     private Rigidbody2D enemyBody;
     private bool choosingDirection = false;
     private Vector3 randomDirection;
@@ -31,8 +35,8 @@ public class EnemyController : MonoBehaviour
     // Attack
     public GameObject bulletPrefab;
     public float bulletSpeed = 5f;
-    private float lastFire;
     public float fireDelay = 0.7f;
+    private float lastFire;
 
     // Animation
     public Animator enemyAnimator;
@@ -61,6 +65,14 @@ public class EnemyController : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
 
         player = GameObject.FindGameObjectWithTag("Player");
+
+        // Set constants
+        maxLives = gameConstants.enemyMaxLives;
+        moveSpeed = gameConstants.enemyMoveSpeed;
+        chaseRange = gameConstants.enemyChaseRange;
+        bulletSpeed = gameConstants.enemyBulletSpeed;
+        fireDelay = gameConstants.enemyFireDelay;
+        shootRange = gameConstants.enemyShootRange;
     }
 
     // Update is called once per frame
@@ -144,13 +156,13 @@ public class EnemyController : MonoBehaviour
         }
 
         // Actually move in chosen direction
-        transform.position += -transform.right * speed * Time.deltaTime;
+        transform.position += -transform.right * moveSpeed * Time.deltaTime;
     }
 
     private void Chase()
     {
         //audioSource.PlayOneShot(chaseActiveSound);
-        transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(transform.position, player.transform.position, moveSpeed * Time.deltaTime);
     }
 
     private void Shoot()
@@ -167,22 +179,6 @@ public class EnemyController : MonoBehaviour
         bullet.transform.Rotate(0, 0, angle);
         lastFire = Time.time;
     }
-
-    // For now, enemies die instantly
-    // public void Damage(float damageAmount)
-    // {
-    //     currentHealth -= damageAmount;
-    //     HealthCheck();
-    //     // Do some UI updates here
-    // }
-
-    // private void HealthCheck()
-    // {
-    //     if (currentHealth <= 0)
-    //     {
-    //         currentState = EnemyState.Die;
-    //     }
-    // }
 
     public void Die()
     {

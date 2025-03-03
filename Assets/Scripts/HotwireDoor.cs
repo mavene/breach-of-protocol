@@ -5,11 +5,14 @@ using UnityEngine.Events;
 
 public class HotwireDoor : MonoBehaviour
 {
+    // ScriptableObject constants
+    public GameConstants gameConstants;
+
     // Events
     public UnityEvent onHotwireComplete;
 
     // Parameters
-    private float detectionRadius = 2.0f;
+    private float detectionRadius;
     private bool isHotwiring = false;
     private Coroutine hotwireCoroutine;
 
@@ -27,6 +30,9 @@ public class HotwireDoor : MonoBehaviour
             //progressAnimator.keepAnimatorStateOnDisable = true;
             progressIndicator.SetActive(false);
         }
+
+        // Set constants
+        detectionRadius = gameConstants.hotwireDetectionRadius;
     }
 
     // Subscriber - Hotwire Interaction
