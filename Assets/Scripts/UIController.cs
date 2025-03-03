@@ -1,10 +1,13 @@
 using UnityEngine;
 using TMPro;
 
-public class UIManager : MonoBehaviour
+public class UIController : MonoBehaviour
 {
+    // External components
     public CanvasGroup inGameUI;
     public CanvasGroup gameOverUI;
+    public TextMeshProUGUI inGameScoreText;
+    public TextMeshProUGUI gameOverScoreText;
 
     // Ensure Game Over UI components not shown
     private void Start()
@@ -17,6 +20,17 @@ public class UIManager : MonoBehaviour
         group.alpha = visibility ? 1 : 0;
         group.interactable = visibility;
         group.blocksRaycasts = visibility;
+    }
+
+    public void ScoreChange(int score)
+    {
+        inGameScoreText.text = "Score: " + score.ToString();
+        gameOverScoreText.text = inGameScoreText.text;
+    }
+
+    public void ShowObjective()
+    {
+        //
     }
 
     // Toggle Game Over and hide in-game UI

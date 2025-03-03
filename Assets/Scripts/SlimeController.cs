@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 public enum SlimeState
 {
@@ -10,6 +11,9 @@ public enum SlimeState
 
 public class SlimeController : MonoBehaviour
 {
+    // Events
+    public UnityEvent<int> onSlimeDeath;
+
     // State
     public SlimeState currentState = SlimeState.Idle;
     public Vector3 startPosition;
@@ -36,7 +40,6 @@ public class SlimeController : MonoBehaviour
     public float bulletSpeed;
     public float fireRate;
     private float lastFireTime;
-    private Vector2 attackInput;
     private float lastFire;
 
     // Audio
@@ -110,7 +113,6 @@ public class SlimeController : MonoBehaviour
     public void Respawn()
     {
         currentState = SlimeState.Idle;
-        // isDeathAnimationStarted = false;
         transform.position = topLeft;
         gameObject.SetActive(true);
         gameObject.transform.localPosition = startPosition;
@@ -163,12 +165,6 @@ public class SlimeController : MonoBehaviour
         return Vector3.Distance(transform.position, player.transform.position) <= range;
     }
 
-    // private void Wander()
-    // {
-
-    //     // Actually move in chosen direction
-    //     transform.position += -transform.right * speed * Time.deltaTime;
-    // }
     private void Wander()
     {
         Vector2 targetPosition = path[currentTargetIndex]; // Get current target position
@@ -246,16 +242,13 @@ public class SlimeController : MonoBehaviour
         slimeBody.velocity = Vector2.zero;
         isDeathAnimationStarted = false;
         StartCoroutine(HideDelay());
-        scorer.UpdateScore(3);
-        //gameObject.SetActive(false);
-        //Destroy(gameObject); // Rationale for removing this is I want to use SetActive instead
+        onSlimeDeath.Invoke(1);
     }
     private IEnumerator HideDelay()
     {
         slimeAnimator.Play("slime-death");
         yield return new WaitForSeconds(0.6f);
         gameObject.SetActive(false);
-        // Destroy(gameObject);
     }
 
     private void Shoot(Vector2 direction)

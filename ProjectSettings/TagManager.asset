@@ -12,6 +12,7 @@ TagManager:
   - EnemyProjectile
   - Slime
   - DeflectedProjectile
+  - Door
   layers:
   - Default
   - TransparentFX

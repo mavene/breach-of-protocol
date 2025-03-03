@@ -14,6 +14,10 @@ public class ActionManager : MonoBehaviour
     // Deflect Event
     public UnityEvent deflectCheck;
 
+    // Hotwire Event
+    public UnityEvent<Vector3> hotwireCheck;
+    public UnityEvent hotwireCancel;
+
     public void OnMoveAction(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -46,6 +50,20 @@ public class ActionManager : MonoBehaviour
         if (context.phase == InputActionPhase.Performed)
         {
             deflectCheck.Invoke();
+        }
+    }
+
+    public void OnHotwireAction(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            Debug.Log("Pressing down E");
+            hotwireCheck.Invoke(this.gameObject.transform.position);
+        }
+        else if (context.canceled)
+        {
+            Debug.Log("No more E");
+            hotwireCancel.Invoke();
         }
     }
 }

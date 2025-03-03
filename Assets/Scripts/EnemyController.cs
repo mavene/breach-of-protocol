@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 // Enemy FSM 
 public enum EnemyState
@@ -12,6 +13,9 @@ public enum EnemyState
 
 public class EnemyController : MonoBehaviour
 {
+    // Events
+    public UnityEvent<int> onEnemyDeath;
+
     // State
     public EnemyState currentState = EnemyState.Idle;
     public Vector3 startPosition;
@@ -133,7 +137,6 @@ public class EnemyController : MonoBehaviour
 
     private void Wander()
     {
-        //audioSource.PlayOneShot(chaseInactiveSound);
         // Keep choosing random directions
         if (!choosingDirection)
         {
@@ -188,14 +191,6 @@ public class EnemyController : MonoBehaviour
         isDeathAnimationStarted = false;
     }
 
-    public void Respawn()
-    {
-        currentState = EnemyState.Idle;
-        isDeathAnimationStarted = false;
-        gameObject.SetActive(true);
-        gameObject.transform.localPosition = startPosition;
-    }
-
     private IEnumerator ChooseDirection()
     {
         choosingDirection = true;
@@ -214,12 +209,24 @@ public class EnemyController : MonoBehaviour
         }
 
         audioSource.PlayOneShot(deathSound);
+
         yield return new WaitForSeconds(deathSound.length);
 
         while (enemyAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
         {
             yield return null;
         }
+
+        onEnemyDeath.Invoke(1); // Calls UpdateScore (Score)
         gameObject.SetActive(false);
+    }
+
+    // #------------------- GAME -------------------#
+    public void Respawn()
+    {
+        currentState = EnemyState.Idle;
+        isDeathAnimationStarted = false;
+        gameObject.SetActive(true);
+        gameObject.transform.localPosition = startPosition;
     }
 }

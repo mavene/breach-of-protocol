@@ -1,8 +1,13 @@
 using UnityEngine;
+using UnityEngine.Events;
 using System.Collections;
 using System;
+
 public class ChestController : MonoBehaviour
 {
+    // Events
+    public UnityEvent<int> onChestOpen;
+
     // Position
     private Vector3 startPosition;
 
@@ -13,9 +18,6 @@ public class ChestController : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip rewardSound;
     public AudioClip hitSound;
-
-    // External components
-    private ScoreController scorer;
 
     // Chest variables
     private float minX = -14f;
@@ -58,8 +60,7 @@ public class ChestController : MonoBehaviour
             if (animator.GetBool("reward"))
             {
                 audioSource.PlayOneShot(rewardSound);
-                scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
-                scorer.UpdateScore(2);
+                onChestOpen.Invoke(2);
                 animator.SetBool("isOpen", false);
                 animator.SetBool("reward", false);
                 StartCoroutine(RespawnChest());

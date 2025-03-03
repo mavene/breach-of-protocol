@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 // Player FSM
 public enum PlayerState
@@ -13,6 +14,9 @@ public enum PlayerState
 
 public class PlayerController : MonoBehaviour
 {
+    // Events
+    public UnityEvent onPlayerDeath;
+
     // Player Components
     private Rigidbody2D playerBody;
     private SpriteRenderer playerSprite;
@@ -47,13 +51,9 @@ public class PlayerController : MonoBehaviour
     // Animation
     private Animator playerAnimator;
 
-    // TODO -> Try to refactor into observers
-    private UIManager uiManager;
-    private ScoreController scorer;
+    // Audio
     public AudioSource audioSource;
     public AudioClip gameOverSound;
-    public GameObject enemies;
-    public GameObject items;
 
     void Start()
     {
@@ -66,8 +66,6 @@ public class PlayerController : MonoBehaviour
         playerAnimator = GetComponent<Animator>();
         playerAnimator.keepAnimatorStateOnDisable = true; // prevents sprite from resetting to a weird frame from previous death
 
-        uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
-        scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
         audioSource = GetComponent<AudioSource>();
     }
 
@@ -244,8 +242,19 @@ public class PlayerController : MonoBehaviour
         Debug.Log("End deflect");
     }
 
+    // Subscriber - Block
+    public void BlockCheck(Vector2 direction)
+    {
+        StartCoroutine(BrieflyDisableInput());
+        Block(direction);
+    }
+
+    private void Block(Vector2 direction)
+    {
+        playerBody.velocity = direction * moveSpeed * 0.5f;
+    }
+
     // #------------------- TRIGGERS -------------------#
-    // TODO: TEMP DISABLED FOR DEFLECTS
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.CompareTag("Enemy") || other.gameObject.CompareTag("EnemyProjectile"))
@@ -263,82 +272,34 @@ public class PlayerController : MonoBehaviour
         }
 
         audioSource.PlayOneShot(gameOverSound);
+
         yield return new WaitForSeconds(gameOverSound.length);
 
         while (playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
         {
             yield return null;
         }
+        onPlayerDeath.Invoke(); // Calls GameOver
 
-        StopGame();
         gameObject.SetActive(false);
     }
 
+    private IEnumerator BrieflyDisableInput()
+    {   // Disable input
+        moveInput = Vector2.zero;
+        attackInput = Vector2.zero;
+
+        // Wait a short time
+        yield return new WaitForSeconds(0.2f);
+    }
+
     // #------------------- GAME -------------------#
-    private void StopGame()
-    {
-        // audioSource.PlayOneShot(gameOverSound);
-        Time.timeScale = 0.0f;
-        scorer.FinaliseScore();
-        uiManager.ShowGameOver();
-    }
 
-    public void RestartButtonCallback()
+    public void ResetPlayer()
     {
-        ResetGame();
-        Time.timeScale = 1.0f;
-    }
-
-    private void ResetGame()
-    {
-        // Reset player
         currentState = PlayerState.Idle;
         isDeathStarted = false;
         gameObject.SetActive(true);
         playerBody.transform.localPosition = startPosition;
-        //playerAnimator.Update(0f);
-
-        // Reset scores
-        scorer.ResetScore();
-
-        // Reset items and enemies
-        ResetItems();
-        ResetEnemies();
-
-        // Hide Game Over Screen
-        uiManager.ResetUI();
-    }
-
-    private void ResetItems()
-    {
-        foreach (Transform eachChild in items.transform)
-        {
-            // eachChild.GetComponent<ItemController>().Respawn();
-            if (eachChild.GetComponent<ChestController>() != null)
-            {
-                eachChild.GetComponent<ChestController>().Respawn();
-            }
-            else
-            {
-                eachChild.GetComponent<ItemController>().Respawn();
-            }
-        }
-    }
-
-    private void ResetEnemies()
-    {
-        foreach (Transform eachChild in enemies.transform)
-        {
-            if (eachChild.GetComponent<EnemyController>() != null)
-            {
-                eachChild.GetComponent<EnemyController>().Respawn();
-                eachChild.transform.localPosition = eachChild.GetComponent<EnemyController>().startPosition;
-            }
-            else if (eachChild.GetComponent<SlimeController>() != null)
-            {
-                eachChild.GetComponent<SlimeController>().Respawn();
-                eachChild.transform.localPosition = eachChild.GetComponent<SlimeController>().startPosition;
-            }
-        }
     }
 }

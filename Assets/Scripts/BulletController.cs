@@ -25,7 +25,7 @@ public class BulletController : MonoBehaviour, IDeflectable
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("Enemy") && gameObject.CompareTag("PlayerProjectile"))
+        if (other.gameObject.CompareTag("Enemy") && gameObject.CompareTag("DeflectedProjectile"))
         {
             if (other.gameObject.GetComponent<EnemyController>() != null) other.gameObject.GetComponent<EnemyController>().Die();
             if (other.gameObject.GetComponent<SlimeController>() != null) other.gameObject.GetComponent<SlimeController>().Die();
