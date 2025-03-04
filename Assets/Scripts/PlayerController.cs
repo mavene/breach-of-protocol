@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
 
     // Events
     public UnityEvent<int> updateHealth;
+    public UnityEvent onPlayerDeflect;
     public UnityEvent onPlayerDeath;
 
     // Player Components
@@ -142,7 +143,6 @@ public class PlayerController : MonoBehaviour
                 {
                     isDeathStarted = true;
                     playerAnimator.Play("player-death");
-                    //StartCoroutine(PlayGameOverAudio());
                     StartCoroutine(HideDelay());
                 }
                 break;
@@ -230,10 +230,10 @@ public class PlayerController : MonoBehaviour
     // Subscriber - Deflect
     public void DeflectCheck()
     {
-        Debug.Log("Start deflect");
         if (currentState == PlayerState.Die || Time.time < lastDeflectTime + deflectCooldown)
             return;
 
+        onPlayerDeflect.Invoke(); // Calls PlayCrosshairAnimation (Crosshair)
         lastDeflectTime = Time.time;
         Vector2 arcDir = lastMoveDirection;
 
@@ -252,11 +252,12 @@ public class PlayerController : MonoBehaviour
 
             if (angle <= deflectArcAngle / 2)
             {
+                // TODO: Change this to a successful crosshair (quick spin around in place maybe)
+                //onPlayerDeflect.Invoke(); // Calls PlayCrosshairAnimation (Crosshair)
                 hit.gameObject.tag = "DeflectedProjectile";
                 projectile.Deflect(aimDirection);
             }
         }
-        Debug.Log("End deflect");
     }
 
     // Subscriber - Block

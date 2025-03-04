@@ -85,7 +85,6 @@ public class SlimeController : MonoBehaviour
         // Ensure player is still valid before accessing it
         if (player == null)
         {
-            Debug.LogError("❌ ERROR: Player reference is NULL! Cannot shoot.");
             return;
         }
 
@@ -101,10 +100,6 @@ public class SlimeController : MonoBehaviour
                 {
                     Shoot(direction);
                     lastFireTime = Time.time; // Reset cooldown
-                }
-                else
-                {
-                    Debug.LogWarning("⚠ Warning: Attempted to shoot but direction is zero.");
                 }
             }
         }
@@ -253,11 +248,6 @@ public class SlimeController : MonoBehaviour
 
     private void Shoot(Vector2 direction)
     {
-        if (SlimeAttackPrefab == null)
-        {
-            Debug.LogError("❌ ERROR: SlimeAttackPrefab is NULL! Cannot instantiate.");
-            return;
-        }
         GameObject attack = Instantiate(SlimeAttackPrefab, transform.position, transform.rotation) as GameObject;
         attack.tag = "EnemyProjectile";
         attack.GetComponent<Animator>().runtimeAnimatorController = enemyProjAnimController;

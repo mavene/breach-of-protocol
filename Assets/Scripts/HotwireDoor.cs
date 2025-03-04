@@ -38,7 +38,6 @@ public class HotwireDoor : MonoBehaviour
     // Subscriber - Hotwire Interaction
     public void HotwireCheck(Vector3 playerPos)
     {
-        Debug.Log("Checking hotwire eligibility");
         float distance = Vector3.Distance(transform.position, playerPos);
 
         if (distance <= detectionRadius)
@@ -56,7 +55,6 @@ public class HotwireDoor : MonoBehaviour
 
     private void StartHotwiring()
     {
-        Debug.Log("Hotwiring started");
         isHotwiring = true;
 
         // Show progress indicator if available
@@ -70,7 +68,6 @@ public class HotwireDoor : MonoBehaviour
 
     private void CompleteHotwiring()
     {
-        Debug.Log("Hotwiring complete!");
         isHotwiring = false;
 
         // Hide progress indicator

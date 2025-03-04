@@ -17,10 +17,10 @@ public class BulletController : MonoBehaviour, IDeflectable
         StartCoroutine(DestroyDelay());
     }
 
-    private IEnumerator DestroyDelay()
+    public void Deflect(Vector2 direction)
     {
-        yield return new WaitForSeconds(bulletLifetime);
-        Destroy(gameObject);
+        GetComponent<Rigidbody2D>().velocity = direction * 7f;
+        gameObject.tag = "DeflectedProjectile";
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -33,9 +33,9 @@ public class BulletController : MonoBehaviour, IDeflectable
         }
     }
 
-    public void Deflect(Vector2 direction)
+    private IEnumerator DestroyDelay()
     {
-        GetComponent<Rigidbody2D>().velocity = direction * 7f;
-        gameObject.tag = "DeflectedProjectile";
+        yield return new WaitForSeconds(bulletLifetime);
+        Destroy(gameObject);
     }
 }

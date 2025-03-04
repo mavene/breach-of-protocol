@@ -58,8 +58,6 @@ public class NextStage : MonoBehaviour
         // Wait for animation to complete
         while (doorAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
             yield return null;
-
-        Debug.Log("Door open - player can pass through");
     }
 
     // #------------------- GAME -------------------#

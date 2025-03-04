@@ -57,12 +57,10 @@ public class ActionManager : MonoBehaviour
     {
         if (context.performed)
         {
-            Debug.Log("Pressing down E");
             hotwireCheck.Invoke(this.gameObject.transform.position);
         }
         else if (context.canceled)
         {
-            Debug.Log("No more E");
             hotwireCancel.Invoke();
         }
     }
