@@ -149,6 +149,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // TODO: Move this into crosshaircontroller
     void HandleAim()
     {
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -328,7 +329,6 @@ public class PlayerController : MonoBehaviour
     }
 
     // #------------------- GAME -------------------#
-
     public void ResetPlayer()
     {
         currentState = PlayerState.Idle;
