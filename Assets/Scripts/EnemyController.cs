@@ -1,29 +1,46 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 // Enemy FSM 
 public enum EnemyState
 {
     Idle,
     Chase,
+    Shoot,
     Die
 };
 
 public class EnemyController : MonoBehaviour
 {
+    // ScriptableObject constants
+    public GameConstants gameConstants;
+
+    // Events
+    public UnityEvent<int> onEnemyDeath;
+
     // State
     public EnemyState currentState = EnemyState.Idle;
+    private int maxLives;
     public Vector3 startPosition;
-    public float range = 5f;
+    public float chaseRange = 5f;
+    public float shootRange = 0.2f;
 
     // Movement
-    public float speed = 1f;
+    public float moveSpeed = 1f;
     private Rigidbody2D enemyBody;
     private bool choosingDirection = false;
     private Vector3 randomDirection;
 
+    // Attack
+    public GameObject bulletPrefab;
+    public float bulletSpeed = 5f;
+    public float fireDelay = 0.7f;
+    private float lastFire;
+
     // Animation
     public Animator enemyAnimator;
+    public RuntimeAnimatorController enemyProjAnimController;
     private bool isDeathAnimationStarted = false;
 
     // Audio
@@ -31,7 +48,6 @@ public class EnemyController : MonoBehaviour
     public AudioClip chaseActiveSound;
     public AudioClip chaseInactiveSound;
     public AudioClip deathSound;
-    private bool firstTrigger = true;
 
     // Player interactions
     private GameObject player;
@@ -45,9 +61,18 @@ public class EnemyController : MonoBehaviour
         enemyBody.constraints = RigidbodyConstraints2D.FreezeRotation;
 
         enemyAnimator = GetComponent<Animator>();
+        enemyAnimator.keepAnimatorStateOnDisable = true;
         audioSource = GetComponent<AudioSource>();
 
         player = GameObject.FindGameObjectWithTag("Player");
+
+        // Set constants
+        maxLives = gameConstants.enemyMaxLives;
+        moveSpeed = gameConstants.enemyMoveSpeed;
+        chaseRange = gameConstants.enemyChaseRange;
+        bulletSpeed = gameConstants.enemyBulletSpeed;
+        fireDelay = gameConstants.enemyFireDelay;
+        shootRange = gameConstants.enemyShootRange;
     }
 
     // Update is called once per frame
@@ -63,17 +88,17 @@ public class EnemyController : MonoBehaviour
         {
             return;
         }
-
-        if (IsPlayerInRange(range) && currentState != EnemyState.Die)
+        else if (IsPlayerInRange(chaseRange))
         {
             currentState = EnemyState.Chase;
-
-            //audioSource.PlayOneShot(chaseActiveSound);
+            if (IsPlayerInRange(shootRange))
+            {
+                currentState = EnemyState.Shoot;
+            }
         }
         else
         {
             currentState = EnemyState.Idle;
-            //audioSource.PlayOneShot(chaseActiveSound);
         }
 
         switch (currentState)
@@ -83,6 +108,12 @@ public class EnemyController : MonoBehaviour
                 break;
             case (EnemyState.Chase):
                 Chase();
+                break;
+            case (EnemyState.Shoot):
+                if (Time.time > lastFire + fireDelay)
+                {
+                    Shoot();
+                }
                 break;
         }
     }
@@ -97,6 +128,9 @@ public class EnemyController : MonoBehaviour
             case (EnemyState.Chase):
                 enemyAnimator.Play("enemy-chase");
                 break;
+            case (EnemyState.Shoot):
+                enemyAnimator.Play("enemy-shoot");
+                break;
             case (EnemyState.Die):
                 if (!isDeathAnimationStarted)
                 {
@@ -110,7 +144,7 @@ public class EnemyController : MonoBehaviour
 
     private bool IsPlayerInRange(float range)
     {
-        return Vector3.Distance(transform.position, player.transform.position) <= range;
+        return Vector3.Distance(transform.position, player.transform.position) <= chaseRange;
     }
 
     private void Wander()
@@ -122,12 +156,28 @@ public class EnemyController : MonoBehaviour
         }
 
         // Actually move in chosen direction
-        transform.position += -transform.right * speed * Time.deltaTime;
+        transform.position += -transform.right * moveSpeed * Time.deltaTime;
     }
 
     private void Chase()
     {
-        transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+        //audioSource.PlayOneShot(chaseActiveSound);
+        transform.position = Vector2.MoveTowards(transform.position, player.transform.position, moveSpeed * Time.deltaTime);
+    }
+
+    private void Shoot()
+    {
+        GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
+        bullet.tag = "EnemyProjectile";
+        bullet.GetComponent<Animator>().runtimeAnimatorController = enemyProjAnimController;
+        bullet.GetComponent<Animator>().Play("bullet-player");
+
+        Vector2 direction = (player.transform.position - transform.position).normalized;
+        bullet.AddComponent<Rigidbody2D>().gravityScale = 0;
+        bullet.GetComponent<Rigidbody2D>().velocity = direction * bulletSpeed;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        bullet.transform.Rotate(0, 0, angle);
+        lastFire = Time.time;
     }
 
     public void Die()
@@ -135,26 +185,15 @@ public class EnemyController : MonoBehaviour
         currentState = EnemyState.Die;
         enemyBody.velocity = Vector2.zero;
         isDeathAnimationStarted = false;
-        //StartCoroutine(HideDelay());
-        //gameObject.SetActive(false);
-        //Destroy(gameObject); // Rationale for removing this is I want to use SetActive instead
-    }
-
-    public void Respawn()
-    {
-        currentState = EnemyState.Idle;
-        isDeathAnimationStarted = false;
-        gameObject.SetActive(true);
-        gameObject.transform.localPosition = startPosition;
     }
 
     private IEnumerator ChooseDirection()
     {
         choosingDirection = true;
-        yield return new WaitForSeconds(UnityEngine.Random.Range(2f, 8f));
-        randomDirection = new Vector3(0, 0, UnityEngine.Random.Range(0, 360));
+        yield return new WaitForSeconds(Random.Range(2f, 8f));
+        randomDirection = new Vector3(0, 0, Random.Range(0, 360));
         Quaternion nextRotation = Quaternion.Euler(randomDirection);
-        transform.rotation = Quaternion.Lerp(transform.rotation, nextRotation, UnityEngine.Random.Range(0.5f, 2.5f));
+        transform.rotation = Quaternion.Lerp(transform.rotation, nextRotation, Random.Range(0.5f, 2.5f));
         choosingDirection = false;
     }
 
@@ -166,12 +205,24 @@ public class EnemyController : MonoBehaviour
         }
 
         audioSource.PlayOneShot(deathSound);
+
         yield return new WaitForSeconds(deathSound.length);
 
         while (enemyAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
         {
             yield return null;
         }
+
+        onEnemyDeath.Invoke(1); // Calls UpdateScore (Score)
         gameObject.SetActive(false);
+    }
+
+    // #------------------- GAME -------------------#
+    public void Respawn()
+    {
+        currentState = EnemyState.Idle;
+        isDeathAnimationStarted = false;
+        gameObject.SetActive(true);
+        gameObject.transform.localPosition = startPosition;
     }
 }

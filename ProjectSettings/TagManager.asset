@@ -8,6 +8,11 @@ TagManager:
   - Bullet
   - Enemy
   - Chest
+  - PlayerProjectile
+  - EnemyProjectile
+  - Slime
+  - DeflectedProjectile
+  - Door
   layers:
   - Default
   - TransparentFX
@@ -15,7 +20,7 @@ TagManager:
   - chest
   - Water
   - UI
-  - 
+  - Invincible
   - 
   - 
   - 

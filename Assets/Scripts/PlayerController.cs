@@ -1,4 +1,10 @@
+using System.Collections;
+using System.Numerics;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Events;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 // Player FSM
 public enum PlayerState
@@ -6,40 +12,68 @@ public enum PlayerState
     Idle,
     Run,
     Shoot,
+    Deflect,
+    Dodge,
     Die
 };
 
 public class PlayerController : MonoBehaviour
 {
-    // Position
-    private Vector3 startPosition;
+    // ScriptableObject constants
+    public GameConstants gameConstants;
+
+    // Events
+    public UnityEvent<int> updateHealth;
+    public UnityEvent onPlayerDeflect;
+    public UnityEvent onPlayerDeath;
+
+    // Player Components
+    private Rigidbody2D playerBody;
+    private SpriteRenderer playerSprite;
+
+    // State
+    public PlayerState currentState = PlayerState.Idle;
+    private int maxLives;
+    private int currentLives;
+
+    // Conditionals
+    private bool faceRightState = true;
+    private bool isDeathStarted = false;
 
     // Movement
-    public float moveSpeed = 5f;
-    private Rigidbody2D playerBody;
+    private Vector3 startPosition;
+    private float moveSpeed;
     private Vector2 moveInput;
+    private Vector2 lastMoveDirection;
+    private Vector2 aimDirection;
 
     // Attack
     public GameObject bulletPrefab;
-    public float bulletSpeed;
+    private float bulletSpeed;
+    private float fireDelay;
     private float lastFire;
-    public float fireDelay;
     private Vector2 attackInput;
 
+    // Deflect
+    public float deflectArcAngle;
+    public float deflectCooldown;
+    public float deflectRange;
+    private float lastDeflectTime;
+
+    // Evade
+    private float evadeSpeed;
+    private float evadeDistance;
+    private float evadeCooldown;
+    private float evadeInvincibilityDuration;
+    private float lastEvadeTime;
+    private Vector2 evadeStartPosition;
+    private bool isDodging;
+
+    // Serve 
+    private float lastServe;
+
     // Animation
-    public Animator playerAnimator;
-
-    // UI
-    // TODO: Shift this part to overall GameController
-    public UIManager uiManager;
-    private ScoreController scorer;
-
-    // Game State
-    // TODO: Shift this part to overall GameController
-    public GameObject enemies;
-    public GameObject items;
-
-    public PlayerState currentState = PlayerState.Idle;
+    private Animator playerAnimator;
 
     // Audio
     public AudioSource audioSource;
@@ -47,63 +81,65 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        startPosition = transform.localPosition;
-
+        playerSprite = GetComponent<SpriteRenderer>();
         playerBody = GetComponent<Rigidbody2D>();
         playerBody.constraints = RigidbodyConstraints2D.FreezeRotation; //disallow rotation especially after colliding
 
+        startPosition = transform.localPosition;
+
         playerAnimator = GetComponent<Animator>();
-        scorer = GameObject.Find("Scorer").GetComponent<ScoreController>();
+        playerAnimator.keepAnimatorStateOnDisable = true; // prevents sprite from resetting to a weird frame from previous death
+
         audioSource = GetComponent<AudioSource>();
+
+        // Set constants
+        maxLives = gameConstants.playerMaxLives;
+        moveSpeed = gameConstants.playerMoveSpeed;
+        bulletSpeed = gameConstants.playerBulletSpeed;
+        fireDelay = gameConstants.playerFireDelay;
+        deflectArcAngle = gameConstants.playerDeflectArcAngle;
+        deflectCooldown = gameConstants.playerDeflectCooldown;
+        deflectRange = gameConstants.playerDeflectRange;
+        evadeSpeed = gameConstants.playerEvadeSpeed;
+        evadeInvincibilityDuration = gameConstants.playerEvadeInvincibilityDuration;
+        evadeDistance = gameConstants.playerEvadeDistance;
+        evadeCooldown = gameConstants.playerEvadeCooldown;
+
+        currentLives = maxLives;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        HandleInput();
+        HandleStates();
         HandleAnimations();
+        HandleAim();
     }
 
     void FixedUpdate()
     {
-        ApplyMovement();
-        // if ((attackInput.x != 0 || attackInput.y != 0) && Time.time > lastFire + fireDelay)
-        // {
-        //     Shoot(attackInput);
-        // }
-        if ((attackInput.x != 0 || attackInput.y != 0) && Time.time > lastFire + fireDelay)
+        if (currentState == PlayerState.Die)
         {
-            //if attackInput is going to the top or bottom, shoot vertically
-            if (attackInput.y > 0)
-            {
-                Shoot(attackInput, "up");
-            }
-            else if (attackInput.y < 0)
-            {
-                Shoot(attackInput, "down");
-            }
-            else if (attackInput.x > 0)
-            {
-                Shoot(attackInput, "right");
-            }
-            else if (attackInput.x < 0)
-            {
-                Shoot(attackInput, "left");
-            }
+            return;
+        }
+        else if (isDodging)
+        {
+            Dodge();
+        }
+        else
+        {
+            Move(moveInput);
         }
     }
 
-    private void HandleInput()
+    // #-------------------- HANDLERS ---------------------#
+    private void HandleStates()
     {
-        // Store movement input
-        moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        moveInput = Vector2.ClampMagnitude(moveInput, 1f);
-
-        // Store attack input
-        attackInput = new Vector2(Input.GetAxis("ShootingHorizontal"), Input.GetAxis("ShootingVertical"));
-
         // Check player states after input processing
-        if (attackInput.x != 0 || attackInput.y != 0)
+        if (currentState == PlayerState.Die)
+        {
+            return;
+        }
+        else if (attackInput.x != 0 || attackInput.y != 0)
         {
             currentState = PlayerState.Shoot;
         }
@@ -131,25 +167,85 @@ public class PlayerController : MonoBehaviour
                 playerAnimator.Play("player-shoot");
                 break;
             case (PlayerState.Die):
-                playerAnimator.Play("player-death");
+                // This conditional prevents loops since we are deactivating the gameObject
+                if (!isDeathStarted)
+                {
+                    isDeathStarted = true;
+                    playerAnimator.Play("player-death");
+                    StartCoroutine(HideDelay());
+                }
                 break;
         }
     }
 
-    private void ApplyMovement()
+    void HandleAim()
     {
-        // Apply translation
-        playerBody.velocity = moveInput * moveSpeed;
-
-        // Set animation parameter -> TODO: check if I really need this and how to vary the animation using this param
-        // playerAnimator.SetFloat("xSpeed", Mathf.Abs(playerBody.velocity.x));
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        aimDirection = (mousePos - (Vector2)transform.position).normalized;
     }
 
-    // TODO: Instantiate bullet a bit lower to match gun position of player
-    private void Shoot(Vector2 direction, string orientation)
+    // #-------------------- SUBSCRIBERS ------------------#
+    // Subscriber - Movement
+    public void MoveCheck(Vector2 value1, int value2)
+    {
+        if (currentState == PlayerState.Die)
+        {
+            moveInput = Vector2.zero;
+        }
+        moveInput = value1;
+        lastMoveDirection = moveInput.normalized;
+
+        if (moveInput.x != 0)  // Only flip if there's horizontal movement
+        {
+            FlipPlayerSprite(value2);
+        }
+        // Movement is continuous input so put in FixedUpdates
+    }
+
+    void FlipPlayerSprite(int value)
+    {
+        if (value == -1 && faceRightState)
+        {
+            faceRightState = false;
+            playerSprite.flipX = true;
+
+        }
+        else if (value == 1 && !faceRightState)
+        {
+            faceRightState = true;
+            playerSprite.flipX = false;
+        }
+    }
+
+    void Move(Vector2 value)
+    {
+        playerBody.velocity = value * moveSpeed;
+    }
+
+    // -----------------------------------------------------------------------
+
+    // Subscriber - Attack (To be removed)
+    public void AttackCheck(Vector2 value)
+    {
+        if (currentState == PlayerState.Die)
+        {
+            attackInput = Vector2.zero;
+        }
+        attackInput = value;
+
+        // For some reason I need to put it here, if I shift it up to FixedUpdate its bollocks
+        if (Time.time > lastFire + fireDelay)
+        {
+            Shoot(attackInput);
+        }
+    }
+
+    void Shoot(Vector2 direction)
     {
         GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
-        bullet.AddComponent<Rigidbody2D>().gravityScale = 0;
+        bullet.tag = "PlayerProjectile";
+        bullet.AddComponent<Rigidbody2D>();
+        bullet.GetComponent<Rigidbody2D>().gravityScale = 0;
         bullet.GetComponent<Rigidbody2D>().velocity = new Vector3(
             (direction.x < 0) ? Mathf.Floor(direction.x) * bulletSpeed : Mathf.Ceil(direction.x) * bulletSpeed,
             (direction.y < 0) ? Mathf.Floor(direction.y) * bulletSpeed : Mathf.Ceil(direction.y) * bulletSpeed,
@@ -160,68 +256,194 @@ public class PlayerController : MonoBehaviour
         lastFire = Time.time;
     }
 
+    // -----------------------------------------------------------------------
+
+    // Subscriber - Deflect
+    public void DeflectCheck()
+    {
+        if (currentState == PlayerState.Die || Time.time < lastDeflectTime + deflectCooldown)
+            return;
+
+        onPlayerDeflect.Invoke(); // Calls PlayCrosshairAnimation (Crosshair)
+        lastDeflectTime = Time.time;
+        Vector2 arcDir = lastMoveDirection;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, deflectRange);
+
+        foreach (Collider2D hit in hits)
+        {
+            IDeflectable projectile = hit.GetComponent<IDeflectable>();
+            if (projectile == null) continue;
+
+            if (hit.gameObject.CompareTag("DeflectedProjectile")) continue;
+
+            Vector2 dirToProjectile = (hit.transform.position - transform.position).normalized;
+
+            float angle = Vector2.Angle(arcDir, dirToProjectile);
+
+            if (angle <= deflectArcAngle / 2)
+            {
+                // TODO: Change this to a successful crosshair (quick spin around in place maybe)
+                //onPlayerDeflect.Invoke(); // Calls PlayCrosshairAnimation (Crosshair)
+                hit.gameObject.tag = "DeflectedProjectile";
+                projectile.Deflect(aimDirection);
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+
+    // Subscriber - Evade
+    public void EvadeCheck()
+    {
+        if (currentState == PlayerState.Die || Time.time < lastEvadeTime + evadeCooldown)
+            return;
+
+        lastEvadeTime = Time.time;
+        isDodging = true;
+
+        //currentState = PlayerState.Dodge;
+
+        evadeStartPosition = transform.position;
+
+        StartCoroutine(DodgeInvincibility());
+    }
+
+    void Dodge()
+    {
+        float distanceTravelled = Vector2.Distance(evadeStartPosition, transform.position);
+
+        if (distanceTravelled >= evadeDistance)
+        {
+            playerBody.velocity = Vector2.zero;
+            return;
+        }
+
+        playerBody.velocity = aimDirection * evadeSpeed;
+    }
+
+    // -----------------------------------------------------------------------
+
+    // TODO: Modify to correct sprite and finish the pickup
+    // Subscriber - Serve Ball
+
+    public void ServeCheck()
+    {
+        Serve();
+    }
+
+    void Serve()
+    {
+        GameObject ball = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
+        ball.tag = "PlayerServedBall";
+        ball.AddComponent<Rigidbody2D>();
+        ball.GetComponent<Rigidbody2D>().gravityScale = 0;
+        ball.GetComponent<Rigidbody2D>().velocity = new Vector3(
+            (aimDirection.x < 0) ? Mathf.Floor(aimDirection.x) * bulletSpeed : Mathf.Ceil(aimDirection.x) * bulletSpeed,
+            (aimDirection.y < 0) ? Mathf.Floor(aimDirection.y) * bulletSpeed : Mathf.Ceil(aimDirection.y) * bulletSpeed,
+            0
+        );
+        float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
+        ball.transform.Rotate(0, 0, angle);
+        //lastServe = Time.time;
+    }
+
+    // -----------------------------------------------------------------------
+
+    // Subscriber - Block
+    public void BlockCheck(Vector2 direction)
+    {
+        StartCoroutine(BrieflyDisableInput());
+        Block(direction);
+    }
+
+    private void Block(Vector2 direction)
+    {
+        playerBody.velocity = direction * moveSpeed * 0.5f;
+    }
+
+    // #------------------- TRIGGERS -------------------#
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("Enemy"))
+        // Redundant since we doing layer disabling lmao
+        // if (isDodging)
+        //     return;
+
+        if (other.gameObject.CompareTag("Enemy") || other.gameObject.CompareTag("EnemyProjectile"))
         {
-            audioSource.PlayOneShot(gameOverSound);
-            Time.timeScale = 0.0f;
-            scorer.FinaliseScore();
-            uiManager.ShowGameOver();
+            //currentState = PlayerState.Die;
+            Damage(1);
         }
     }
 
-    // TODO: Shift these out to GameController to control start/end game states
-    public void RestartButtonCallback()
+    public void Damage(int damageAmount)
     {
-        ResetGame();
-        Time.timeScale = 1.0f;
+        currentLives -= damageAmount;
+        updateHealth.Invoke(currentLives); // Calls UpdateHearts (UI)
+        HealthCheck();
     }
 
-    private void ResetGame()
+    private void HealthCheck()
     {
-        // Reset player
+        if (currentLives <= 0)
+        {
+            currentState = PlayerState.Die;
+        }
+    }
+
+    // #------------------ COROUTINES --------------------
+    private IEnumerator HideDelay()
+    {
+        while (!playerAnimator.GetCurrentAnimatorStateInfo(0).IsName("player-death"))
+        {
+            yield return null;
+        }
+
+        audioSource.PlayOneShot(gameOverSound);
+
+        yield return new WaitForSeconds(gameOverSound.length);
+
+        while (playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
+        {
+            yield return null;
+        }
+        onPlayerDeath.Invoke(); // Calls GameOver
+
+        gameObject.SetActive(false);
+    }
+
+    private IEnumerator BrieflyDisableInput()
+    {   // Disable input
+        moveInput = Vector2.zero;
+        attackInput = Vector2.zero;
+
+        // Wait a short time
+        yield return new WaitForSeconds(0.2f);
+    }
+
+    private IEnumerator DodgeInvincibility()
+    {
+        int originalLayer = gameObject.layer;
+        gameObject.layer = LayerMask.NameToLayer("Invincible");
+
+        float endTime = Time.time + evadeInvincibilityDuration;
+
+        while (Time.time < endTime)
+        {
+            yield return null;
+        }
+
+        isDodging = false;
+        gameObject.layer = originalLayer;
+    }
+
+    // #------------------- GAME -------------------#
+    public void ResetPlayer()
+    {
+        currentState = PlayerState.Idle;
+        isDeathStarted = false;
+        currentLives = maxLives;
         playerBody.transform.localPosition = startPosition;
-        //faceRightState = true;
-
-        // Reset scores
-        scorer.ResetScore();
-
-        // Reset items and enemies
-        ResetItems();
-        ResetEnemies();
-
-        // Hide Game Over Screen
-        uiManager.ResetUI();
+        gameObject.SetActive(true);
     }
-
-    // TODO: Move out to GameController
-    private void ResetItems()
-    {
-        foreach (Transform eachChild in items.transform)
-        {
-            // eachChild.GetComponent<ItemController>().Respawn();
-            if (eachChild.GetComponent<ChestController>() != null)
-            {
-                eachChild.GetComponent<ChestController>().Respawn();
-            }
-            else
-            {
-                eachChild.GetComponent<ItemController>().Respawn();
-            }
-        }
-    }
-
-    // TODO: Move out to GameController
-    // TODO: I know its repeated but in case enemies need to respawn differently I can split the logic
-    private void ResetEnemies()
-    {
-        foreach (Transform eachChild in enemies.transform)
-        {
-            eachChild.GetComponent<EnemyController>().Respawn();
-            eachChild.transform.localPosition = eachChild.GetComponent<EnemyController>().startPosition;
-        }
-    }
-
-
 }

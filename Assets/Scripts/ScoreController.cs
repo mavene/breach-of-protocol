@@ -1,43 +1,39 @@
 using UnityEngine;
+using UnityEngine.Events;
 using TMPro;
+using UnityEngine.SocialPlatforms.Impl;
 
-public class ScoreController : MonoBehaviour
+public class ScoreController : Singleton<ScoreController>
 {
-    public TextMeshProUGUI inGameScoreText;
-    public TextMeshProUGUI gameOverScoreText;
+    // ScriptableObjects
+    public IntVariable gameScore;
 
-    [System.NonSerialized]
-    public int score = 0; // Hide from inspector
+    // Events
+    public UnityEvent<int> scoreChange;
+    public UnityEvent<int> highScoreChange;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        gameScore.Value = 0;
     }
 
     // Update is called once per frame
 
-    public void UpdateScore()
+    public void UpdateScore(int value)
     {
-        score++;
-        inGameScoreText.text = "Score: " + score.ToString();
-        //gameOverScoreText.text = inGameScoreText.text;
-    }
-    public void UpdateScore5()
-    {
-        score+=3;
-        inGameScoreText.text = "Score: " + score.ToString();
-        //gameOverScoreText.text = inGameScoreText.text;
+        gameScore.ApplyChange(value);
+        scoreChange.Invoke(gameScore.Value); // Calls ScoreChange (UI)
     }
 
-    public void FinaliseScore()
+    public void UpdateHighscore()
     {
-        gameOverScoreText.text = inGameScoreText.text;
+        highScoreChange.Invoke(gameScore.previousHighestValue); // Calls HighscoreChange (UI)
     }
 
     public void ResetScore()
     {
-        score = 0;
-        inGameScoreText.text = "Score: 0";
+        gameScore.SetValue(0);
+        scoreChange.Invoke(gameScore.Value); // Calls ScoreChange (UI)
     }
 }
