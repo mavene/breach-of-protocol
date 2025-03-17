@@ -1,6 +1,10 @@
 using System.Collections;
+using System.Numerics;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Events;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 // Player FSM
 public enum PlayerState
@@ -9,6 +13,7 @@ public enum PlayerState
     Run,
     Shoot,
     Deflect,
+    Dodge,
     Die
 };
 
@@ -39,6 +44,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 startPosition;
     private float moveSpeed;
     private Vector2 moveInput;
+    private Vector2 lastMoveDirection;
+    private Vector2 aimDirection;
 
     // Attack
     public GameObject bulletPrefab;
@@ -52,8 +59,18 @@ public class PlayerController : MonoBehaviour
     public float deflectCooldown;
     public float deflectRange;
     private float lastDeflectTime;
-    private Vector2 lastMoveDirection;
-    private Vector2 aimDirection;
+
+    // Evade
+    private float evadeSpeed;
+    private float evadeDistance;
+    private float evadeCooldown;
+    private float evadeInvincibilityDuration;
+    private float lastEvadeTime;
+    private Vector2 evadeStartPosition;
+    private bool isDodging;
+
+    // Serve 
+    private float lastServe;
 
     // Animation
     private Animator playerAnimator;
@@ -83,6 +100,10 @@ public class PlayerController : MonoBehaviour
         deflectArcAngle = gameConstants.playerDeflectArcAngle;
         deflectCooldown = gameConstants.playerDeflectCooldown;
         deflectRange = gameConstants.playerDeflectRange;
+        evadeSpeed = gameConstants.playerEvadeSpeed;
+        evadeInvincibilityDuration = gameConstants.playerEvadeInvincibilityDuration;
+        evadeDistance = gameConstants.playerEvadeDistance;
+        evadeCooldown = gameConstants.playerEvadeCooldown;
 
         currentLives = maxLives;
     }
@@ -96,7 +117,15 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (currentState != PlayerState.Die)
+        if (currentState == PlayerState.Die)
+        {
+            return;
+        }
+        else if (isDodging)
+        {
+            Dodge();
+        }
+        else
         {
             Move(moveInput);
         }
@@ -149,7 +178,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // TODO: Move this into crosshaircontroller
     void HandleAim()
     {
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -196,7 +224,7 @@ public class PlayerController : MonoBehaviour
 
     // -----------------------------------------------------------------------
 
-    // Subscriber - Attack
+    // Subscriber - Attack (To be removed)
     public void AttackCheck(Vector2 value)
     {
         if (currentState == PlayerState.Die)
@@ -227,6 +255,8 @@ public class PlayerController : MonoBehaviour
         bullet.transform.Rotate(0, 0, angle);
         lastFire = Time.time;
     }
+
+    // -----------------------------------------------------------------------
 
     // Subscriber - Deflect
     public void DeflectCheck()
@@ -261,6 +291,65 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // -----------------------------------------------------------------------
+
+    // Subscriber - Evade
+    public void EvadeCheck()
+    {
+        if (currentState == PlayerState.Die || Time.time < lastEvadeTime + evadeCooldown)
+            return;
+
+        lastEvadeTime = Time.time;
+        isDodging = true;
+
+        //currentState = PlayerState.Dodge;
+
+        evadeStartPosition = transform.position;
+
+        StartCoroutine(DodgeInvincibility());
+    }
+
+    void Dodge()
+    {
+        float distanceTravelled = Vector2.Distance(evadeStartPosition, transform.position);
+
+        if (distanceTravelled >= evadeDistance)
+        {
+            playerBody.velocity = Vector2.zero;
+            return;
+        }
+
+        playerBody.velocity = aimDirection * evadeSpeed;
+    }
+
+    // -----------------------------------------------------------------------
+
+    // TODO: Modify to correct sprite and finish the pickup
+    // Subscriber - Serve Ball
+
+    public void ServeCheck()
+    {
+        Serve();
+    }
+
+    void Serve()
+    {
+        GameObject ball = Instantiate(bulletPrefab, transform.position, transform.rotation) as GameObject;
+        ball.tag = "PlayerServedBall";
+        ball.AddComponent<Rigidbody2D>();
+        ball.GetComponent<Rigidbody2D>().gravityScale = 0;
+        ball.GetComponent<Rigidbody2D>().velocity = new Vector3(
+            (aimDirection.x < 0) ? Mathf.Floor(aimDirection.x) * bulletSpeed : Mathf.Ceil(aimDirection.x) * bulletSpeed,
+            (aimDirection.y < 0) ? Mathf.Floor(aimDirection.y) * bulletSpeed : Mathf.Ceil(aimDirection.y) * bulletSpeed,
+            0
+        );
+        float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
+        ball.transform.Rotate(0, 0, angle);
+        //lastServe = Time.time;
+    }
+
+    // -----------------------------------------------------------------------
+
     // Subscriber - Block
     public void BlockCheck(Vector2 direction)
     {
@@ -276,6 +365,10 @@ public class PlayerController : MonoBehaviour
     // #------------------- TRIGGERS -------------------#
     void OnTriggerEnter2D(Collider2D other)
     {
+        // Redundant since we doing layer disabling lmao
+        // if (isDodging)
+        //     return;
+
         if (other.gameObject.CompareTag("Enemy") || other.gameObject.CompareTag("EnemyProjectile"))
         {
             //currentState = PlayerState.Die;
@@ -326,6 +419,22 @@ public class PlayerController : MonoBehaviour
 
         // Wait a short time
         yield return new WaitForSeconds(0.2f);
+    }
+
+    private IEnumerator DodgeInvincibility()
+    {
+        int originalLayer = gameObject.layer;
+        gameObject.layer = LayerMask.NameToLayer("Invincible");
+
+        float endTime = Time.time + evadeInvincibilityDuration;
+
+        while (Time.time < endTime)
+        {
+            yield return null;
+        }
+
+        isDodging = false;
+        gameObject.layer = originalLayer;
     }
 
     // #------------------- GAME -------------------#

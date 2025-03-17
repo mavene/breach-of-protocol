@@ -33,12 +33,39 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "dodge",
+                    "type": "Button",
+                    "id": "b1c4ed11-bc99-474d-974c-ea504041aad9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "interact",
                     "type": "Button",
                     "id": "d182ec33-0170-4d54-9bec-e59dae571660",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "Hold",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "serve",
+                    "type": "Button",
+                    "id": "67319ad0-abcb-476b-a88f-d61ca89b73ed",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "item",
+                    "type": "Button",
+                    "id": "48a598d4-f8a1-46d4-baec-7e8878d3762c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
                     "initialStateCheck": false
                 }
             ],
@@ -166,12 +193,45 @@
                 },
                 {
                     "name": "",
+                    "id": "9c0c3dac-6909-462f-a40d-84f883cab847",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "dodge",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "89944070-2dc9-4a4a-ad2c-6498c3b3c416",
                     "path": "<Keyboard>/e",
                     "interactions": "Hold",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2facc5d2-423e-4f3f-9fa7-b53b26f31b56",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "serve",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a6ef6fa4-95b6-4db2-b496-8d76ba2f9634",
+                    "path": "<Keyboard>/space",
+                    "interactions": "Hold",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "item",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

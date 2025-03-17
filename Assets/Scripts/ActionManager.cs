@@ -5,18 +5,27 @@ using UnityEngine.InputSystem;
 
 public class ActionManager : MonoBehaviour
 {
-    // Movement Event
+    // Movement Event (Move with WASD)
     public UnityEvent<Vector2, int> moveCheck;
 
-    // Attack Event
+    // Attack Event (Shoot with Arrows) -> to be removed for final game
     public UnityEvent<Vector2> attackCheck;
 
-    // Deflect Event
+    // Deflect Event (Parry with LMB)
     public UnityEvent deflectCheck;
 
-    // Hotwire Event
+    // Evade Event (Dodge with RMB)
+    public UnityEvent evadeCheck;
+
+    // Hotwire Event (Interact with E)
     public UnityEvent<Vector3> hotwireCheck;
     public UnityEvent hotwireCancel;
+
+    // Attack Event (Serve with Q)
+    public UnityEvent serveCheck;
+
+    // Item Event (Use actives with Spacebar)
+    public UnityEvent itemCheck;
 
     public void OnMoveAction(InputAction.CallbackContext context)
     {
@@ -32,6 +41,7 @@ public class ActionManager : MonoBehaviour
         }
     }
 
+    // TO BE REMOVED
     public void OnAttackAction(InputAction.CallbackContext context)
     {
         if (context.started)
@@ -47,12 +57,28 @@ public class ActionManager : MonoBehaviour
 
     public void OnDeflectAction(InputAction.CallbackContext context)
     {
-        if (context.phase == InputActionPhase.Performed)
+        // if (context.phase == InputActionPhase.Performed)
+        if (context.performed)
         {
             deflectCheck.Invoke();
         }
     }
 
+    public void OnEvadeAction(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            evadeCheck.Invoke();
+        }
+    }
+
+    public void OnServeAction(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            serveCheck.Invoke();
+        }
+    }
     public void OnHotwireAction(InputAction.CallbackContext context)
     {
         if (context.performed)

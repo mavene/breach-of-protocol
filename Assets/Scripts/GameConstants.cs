@@ -18,6 +18,12 @@ public class GameConstants : ScriptableObject
     public float playerDeflectCooldown = 0.5f;
     public float playerDeflectRange = 2f;
 
+    // Evade
+    public float playerEvadeSpeed = 15f;
+    public float playerEvadeInvincibilityDuration = 0.5f;
+    public float playerEvadeDistance = 3f;
+    public float playerEvadeCooldown = 0.5f;
+
     // #-------------------- ENEMIES ---------------------#
     public int enemyMaxLives = 1;
 
